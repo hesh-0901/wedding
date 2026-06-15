@@ -6,11 +6,71 @@
   <title>Générateur d'Invitations - Marie & Japhète</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <style>
+    /* Style pour le bloc de résultat du QR Code */
+    .qr-result-container {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      margin-top: 30px;
+      padding-top: 25px;
+      border-top: 1px dashed var(--border);
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    #qrcode {
+      padding: 15px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(65, 68, 60, 0.02);
+    }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: white;
+      color: var(--dark);
+      border: 1px solid var(--gold);
+      padding: 12px 24px;
+      font-family: 'Georgia', serif;
+      font-size: 0.95rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-download:hover {
+      background: var(--light);
+      border-color: var(--dark);
+    }
+
+    .icon-action {
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
 
   <div class="container">
-    <a href="index.html" class="btn-back">← Retour à l'accueil</a>
+    <a href="index.html" class="btn-back" style="display: flex; align-items: center; gap: 6px;">
+      <svg style="width:16px; height:16px; fill:none; stroke:var(--muted); stroke-width:2;" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour à l'accueil
+    </a>
+    
     <h1>Générer une Invitation</h1>
 
     <div class="section">
@@ -38,7 +98,17 @@
       </div>
       <button class="btn-submit" id="btnGenerer">Enregistrer & Créer le QR Code</button>
 
-      <div id="qrcode"></div>
+      <div id="qr-wrapper" class="qr-result-container">
+        <div id="qrcode"></div>
+        
+        <button class="btn-download" onclick="telechargerQR()">
+          <svg class="icon-action" viewBox="0 0 24 24">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Télécharger l'image du QR Code
+        </button>
+      </div>
+
     </div>
   </div>
 
@@ -46,23 +116,26 @@
     import { db, doc, setDoc } from "./firebase-config.js";
 
     let qrcodeContainer = document.getElementById("qrcode");
-    let qr = new QRCode(qrcodeContainer, { width: 220, height: 220 });
+    // Configuration optimale du QR Code (taille idéale pour l'impression sur carton)
+    let qr = new QRCode(qrcodeContainer, { 
+      width: 250, 
+      height: 250,
+      correctLevel : QRCode.CorrectLevel.H // Haute tolérance aux erreurs pour l'impression
+    });
 
     document.getElementById("btnGenerer").addEventListener("click", async () => {
-      const nom = document.getElementById("nom").value;
+      const nom = document.getElementById("nom").value.trim();
       const categorie = document.getElementById("categorie").value;
-      const nomTable = document.getElementById("nomTable").value;
-      const numTable = document.getElementById("numTable").value;
+      const nomTable = document.getElementById("nomTable").value.trim();
+      const numTable = document.getElementById("numTable").value.trim();
 
       if(!nom || !nomTable || !numTable) {
         alert("Veuillez remplir tous les champs !");
         return;
       }
 
-      // Création d'un ID unique pour cet invité
       const inviteId = "INV-" + Date.now();
 
-      // On prépare l'objet complet qui va ALLER dans le QR Code
       const donnéesComplètes = {
         mariage: "MarieJaphete2026",
         id: inviteId,
@@ -72,11 +145,14 @@
         tNum: numTable
       };
 
-      // 1. Génération immédiate du QR Code (Fonctionne même si Firebase échoue)
+      // 1. Génération du QR Code
       qr.clear();
       qr.makeCode(JSON.stringify(donnéesComplètes));
 
-      // 2. Sauvegarde en tâche de fond sur Firebase (si connecté)
+      // Affichage du bloc de résultat
+      document.getElementById("qr-wrapper").style.display = "flex";
+
+      // 2. Sauvegarde Cloud en arrière-plan
       try {
         await setDoc(doc(db, "invites", inviteId), {
           nom: nom,
@@ -85,12 +161,32 @@
           numTable: numTable,
           statut: "Généré"
         });
-        alert("QR Code généré et synchronisé avec Firebase !");
       } catch (error) {
-        console.warn("Firebase déconnecté, mais le QR Code a été créé localement.");
-        alert("QR Code généré avec succès ! (Note : Non synchronisé sur le cloud, pas d'internet)");
+        console.warn("Mode déconnecté : Sauvegarde cloud ignorée.");
       }
     });
+
+    // Fonction de téléchargement de l'image générée
+    window.telechargerQR = function() {
+      const nomInvite = document.getElementById("nom").value.trim() || "invite";
+      // Nettoyage du nom pour éviter les espaces et caractères spéciaux dans le nom du fichier
+      const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
+      
+      // La bibliothèque qrcode.js génère une balise <img> à l'intérieur du conteneur #qrcode
+      const imgQR = qrcodeContainer.querySelector("img");
+      
+      if (imgQR && imgQR.src) {
+        // Création d'un lien invisible pour déclencher le téléchargement
+        const lienTelechargement = document.createElement("a");
+        lienTelechargement.href = imgQR.src;
+        lienTelechargement.download = nomFichier;
+        document.body.appendChild(lienTelechargement);
+        lienTelechargement.click();
+        document.body.removeChild(lienTelechargement);
+      } else {
+        alert("Une erreur est survenue lors de la préparation de l'image.");
+      }
+    }
   </script>
 </body>
 </html>
