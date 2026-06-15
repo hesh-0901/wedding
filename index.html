@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Générateur QR · Mariage</title>
+<style>
+  :root {
+    --dark:   #41443c;
+    --light:  #e9f6de;
+    --accent: #a4b38f;
+    --cream:  #f5f9f0;
+    --border: #c8d9b8;
+    --text:   #2e3129;
+    --muted:  #6b7460;
+    --gold:   #c9a84c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100%; }
+  body {
+    font-family: 'Georgia', serif;
+    background: var(--cream);
+    color: var(--text);
+  }
+
+  header {
+    background: var(--dark);
+    color: var(--light);
+    text-align: center;
+    padding: 2.5rem 1.5rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg, transparent, transparent 40px,
+      rgba(164,179,143,0.05) 40px, rgba(164,179,143,0.05) 41px
+    );
+    pointer-events: none;
+  }
+  .header-ornament {
+    font-size: 12px;
+    letter-spacing: 5px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 30px;
+    font-weight: normal;
+    color: var(--light);
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+  }
+  header p {
+    font-size: 14px;
+    color: var(--accent);
+    font-style: italic;
+  }
+
+  .container {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  @media (max-width: 640px) {
+    .container { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+  }
+  .card-title {
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 1px;
+    background: var(--accent);
+    flex-shrink: 0;
+  }
+
+  .field { margin-bottom: 1rem; }
+  .field:last-of-type { margin-bottom: 0; }
+  label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-family: 'Arial', sans-serif;
+  }
+  input, select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: 'Georgia', serif;
+    color: var(--text);
+    background: var(--cream);
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .field-initiales {
+    background: var(--cream);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 1rem;
+  }
+  .field-initiales label { margin-bottom: 6px; }
+
+  .btn-gen {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 13px;
+    background: var(--dark);
+    color: var(--light);
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-family: 'Arial', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-gen:hover { background: #2a2d26; }
+
+  /* Preview */
+  .qr-panel { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+
+  .qr-outer-frame {
+    padding: 20px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 24px rgba(65,68,60,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .qr-name-display {
+    font-size: 17px;
+    color: var(--dark);
+    text-align: center;
+    letter-spacing: 0.3px;
+  }
+  .qr-sub-display {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; }
+  .chip {
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .chip.full { grid-column: span 2; }
+  .chip-lbl {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Arial', sans-serif;
+    margin-bottom: 3px;
+  }
+  .chip-val { font-size: 15px; color: var(--dark); font-weight: bold; }
+
+  .actions { display: flex; gap: 8px; width: 100%; margin-top: 4px; }
+  .btn-dl, .btn-new {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Arial', sans-serif;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+  .btn-dl { background: var(--accent); color: var(--dark); border-color: var(--accent); font-weight: bold; }
+  .btn-dl:hover { background: #8fa67a; }
+  .btn-new { background: transparent; color: var(--muted); }
+  .btn-new:hover { background: var(--light); }
+
+  .empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--muted);
+  }
+  .empty-icon { font-size: 44px; margin-bottom: 14px; opacity: 0.25; }
+  .empty p { font-size: 14px; font-style: italic; line-height: 1.6; }
+
+  footer {
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Arial', sans-serif;
+    letter-spacing: 1.5px;
+    border-top: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-ornament">✦ &nbsp; Mariage &nbsp; ✦</div>
+  <h1>Générateur de QR codes</h1>
+  <p>Un QR unique par invité · Design élégant · 100 % offline</p>
+</header>
+
+<div class="container">
+
+  <!-- FORMULAIRE -->
+  <div class="card">
+    <div class="card-title">Informations invité</div>
+
+    <div class="field">
+      <label>Nom complet</label>
+      <input type="text" id="nom" placeholder="ex : Marie Dupont" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>Catégorie</label>
+      <select id="categorie">
+        <option value="">— Sélectionner —</option>
+        <option value="Famille">Famille</option>
+        <option value="Ami(e)">Ami(e)</option>
+        <option value="Collègue">Collègue</option>
+        <option value="VIP">VIP</option>
+        <option value="Enfant">Enfant</option>
+      </select>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <label>Nom de table</label>
+        <input type="text" id="nomtable" placeholder="ex : Table des Roses">
+      </div>
+      <div class="field">
+        <label>N° de table</label>
+        <input type="number" id="numtable" placeholder="ex : 5" min="1">
+      </div>
+    </div>
+
+    <div class="field-initiales">
+      <label>Initiales des mariés (centre du QR)</label>
+      <input type="text" id="initiales" placeholder="ex : S & T" value="S & T" maxlength="6" autocomplete="off">
+    </div>
+
+    <button class="btn-gen" onclick="generer()">Générer le QR code</button>
+  </div>
+
+  <!-- APERÇU -->
+  <div class="card">
+    <div class="card-title">Aperçu</div>
+    <div class="qr-panel" id="qr-panel">
+      <div class="empty">
+        <div class="empty-icon">◈</div>
+        <p>Remplis le formulaire<br>et génère le QR code<br>de ton invité</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Aucune connexion requise &nbsp;·&nbsp; Données 100 % privées &nbsp;·&nbsp; Fichier autonome</footer>
+
+<script>
+/* ═══════════════════════════════════════════
+   QR CODE ENGINE (pur JS, sans dépendance)
+═══════════════════════════════════════════ */
+var QRC = (function () {
+  var G15 = (1<<10)|(1<<8)|(1<<5)|(1<<4)|(1<<2)|(1<<1)|(1<<0);
+  var G18 = (1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8)|(1<<5)|(1<<2)|(1<<0);
+  var G15M = (1<<14)|(1<<12)|(1<<10)|(1<<4)|(1<<1);
+  var PPT = [[], [6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]];
+  var RSBT = [[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]];
+  var EX = new Array(256), LG = new Array(256);
+  for (var i=0;i<8;i++) EX[i]=1<<i;
+  for (var i=8;i<256;i++) EX[i]=EX[i-4]^EX[i-5]^EX[i-6]^EX[i-8];
+  for (var i=0;i<255;i++) LG[EX[i]]=i;
+  function ge(n){while(n<0)n+=255;while(n>=256)n-=255;return EX[n];}
+  function gl(n){return LG[n];}
+  function bd(d){var n=0;while(d!=0){n++;d>>>=1;}return n;}
+  function bchTI(d){var x=d<<10;while(bd(x)-bd(G15)>=0)x^=(G15<<(bd(x)-bd(G15)));return((d<<10)|x)^G15M;}
+  function bchTN(d){var x=d<<12;while(bd(x)-bd(G18)>=0)x^=(G18<<(bd(x)-bd(G18)));return(d<<12)|x;}
+  function Poly(n,s){var o=0;while(o<n.length&&n[o]==0)o++;this.n=new Array(n.length-o+s);for(var i=0;i<n.length-o;i++)this.n[i]=n[i+o];}
+  Poly.prototype={g:function(i){return this.n[i];},l:function(){return this.n.length;},mul:function(e){var n=new Array(this.l()+e.l()-1);for(var i=0;i<this.l();i++)for(var j=0;j<e.l();j++)n[i+j]^=ge(gl(this.g(i))+gl(e.g(j)));return new Poly(n,0);},mod:function(e){if(this.l()-e.l()<0)return this;var r=gl(this.g(0))-gl(e.g(0)),n=new Array(this.l());for(var i=0;i<this.l();i++)n[i]=this.g(i);for(var i=0;i<e.l();i++)n[i]^=ge(gl(e.g(i))+r);return new Poly(n,0).mod(e);}};
+  function RSB(t,d){this.t=t;this.d=d;}
+  function getRSB(t){var tb=RSBT[(t-1)*4+3];if(!tb)throw new Error('rsb');var l=Math.floor(tb.length/3),list=[];for(var i=0;i<l;i++){var c=tb[i*3],tc=tb[i*3+1],dc=tb[i*3+2];for(var j=0;j<c;j++)list.push(new RSB(tc,dc));}return list;}
+  function getECP(n){var a=new Poly([1],0);for(var i=0;i<n;i++)a=a.mul(new Poly([1,ge(i)],0));return a;}
+  function BB(){this.buf=[];this.len=0;}
+  BB.prototype={put:function(n,l){for(var i=0;i<l;i++)this.putBit(((n>>>(l-i-1))&1)==1);},getLengthInBits:function(){return this.len;},putBit:function(b){var i=Math.floor(this.len/8);if(this.buf.length<=i)this.buf.push(0);if(b)this.buf[i]|=(0x80>>>(this.len%8));this.len++;}};
+  function By(d){this.data=d;this.pd=[];for(var i=0;i<d.length;i++){var c=d.charCodeAt(i);if(c>0x800){this.pd.push(0xE0|((c&0xF000)>>>12));this.pd.push(0x80|((c&0xFC0)>>>6));this.pd.push(0x80|(c&0x3F));}else if(c>0x80){this.pd.push(0xC0|((c&0x7C0)>>>6));this.pd.push(0x80|(c&0x3F));}else this.pd.push(c);}if(this.pd.length!=d.length){this.pd.unshift(191);this.pd.unshift(187);this.pd.unshift(239);}}
+  By.prototype={getMode:function(){return 4;},getLength:function(){return this.pd.length;},write:function(b){for(var i=0;i<this.pd.length;i++)b.put(this.pd[i],8);}};
+  function gm(m,i,j){switch(m){case 0:return(i+j)%2==0;case 1:return i%2==0;case 2:return j%3==0;case 3:return(i+j)%3==0;case 4:return(Math.floor(i/2)+Math.floor(j/3))%2==0;case 5:return(i*j)%2+(i*j)%3==0;case 6:return((i*j)%2+(i*j)%3)%2==0;case 7:return((i*j)%3+(i+j)%2)%2==0;}}
+  function Model(t){this.t=t;this.mc=t*4+17;this.mod=[];for(var r=0;r<this.mc;r++){this.mod[r]=[];for(var c=0;c<this.mc;c++)this.mod[r][c]=null;}this.dl=[];this.dc=null;}
+  Model.prototype={add:function(d){this.dl.push(new By(d));this.dc=null;},isDark:function(r,c){return this.mod[r][c];},make:function(){var best=0,min=0;for(var i=0;i<8;i++){this._mk(true,i);var lp=this._lost();if(i==0||lp<min){min=lp;best=i;}}this._mk(false,best);},_mk:function(test,mp){var mc=this.mc;for(var r=0;r<mc;r++)for(var c=0;c<mc;c++)this.mod[r][c]=null;this._pd(0,0);this._pd(mc-7,0);this._pd(0,mc-7);this._pa();this._tp();this._ti(test,mp);if(this.t>=7)this._tn(test);if(!this.dc)this.dc=this._data();this._map(this.dc,mp);},_pd:function(row,col){var mc=this.mc;for(var r=-1;r<=7;r++){if(row+r<=-1||mc<=row+r)continue;for(var c=-1;c<=7;c++){if(col+c<=-1||mc<=col+c)continue;this.mod[row+r][col+c]=((0<=r&&r<=6&&(c==0||c==6))||(0<=c&&c<=6&&(r==0||r==6))||(2<=r&&r<=4&&2<=c&&c<=4));}}},_tp:function(){var mc=this.mc;for(var r=8;r<mc-8;r++)if(this.mod[r][6]==null)this.mod[r][6]=(r%2==0);for(var c=8;c<mc-8;c++)if(this.mod[6][c]==null)this.mod[6][c]=(c%2==0);},_pa:function(){var pos=PPT[this.t-1];for(var i=0;i<pos.length;i++)for(var j=0;j<pos.length;j++){var row=pos[i],col=pos[j];if(this.mod[row][col]!=null)continue;for(var r=-2;r<=2;r++)for(var c=-2;c<=2;c++)this.mod[row+r][col+c]=(r==-2||r==2||c==-2||c==2||(r==0&&c==0));}},_tn:function(test){var bits=bchTN(this.t);for(var i=0;i<18;i++){var mod=(!test&&((bits>>i)&1)==1);this.mod[Math.floor(i/3)][i%3+this.mc-8-3]=mod;this.mod[i%3+this.mc-8-3][Math.floor(i/3)]=mod;}},_ti:function(test,mp){var bits=bchTI((2<<3)|mp);for(var i=0;i<15;i++){var mod=(!test&&((bits>>i)&1)==1);if(i<6)this.mod[i][8]=mod;else if(i<8)this.mod[i+1][8]=mod;else this.mod[this.mc-15+i][8]=mod;}for(var i=0;i<15;i++){var mod=(!test&&((bits>>i)&1)==1);if(i<8)this.mod[8][this.mc-i-1]=mod;else if(i<9)this.mod[8][15-i-1+1]=mod;else this.mod[8][15-i-1]=mod;}this.mod[this.mc-8][8]=(!test);},_map:function(data,mp){var inc=-1,row=this.mc-1,bi=7,by=0;for(var col=this.mc-1;col>0;col-=2){if(col==6)col--;while(true){for(var c=0;c<2;c++){if(this.mod[row][col-c]==null){var dark=false;if(by<data.length)dark=(((data[by]>>>bi)&1)==1);if(gm(mp,row,col-c))dark=!dark;this.mod[row][col-c]=dark;bi--;if(bi==-1){by++;bi=7;}}}row+=inc;if(row<0||this.mc<=row){row-=inc;inc=-inc;break;}}}},_lost:function(){var c=this.mc,l=0,m=this.mod,dk=0;for(var r=0;r<c;r++)for(var col=0;col<c;col++){var s=0,d=m[r][col];for(var x=-1;x<=1;x++){if(r+x<0||c<=r+x)continue;for(var y=-1;y<=1;y++){if(col+y<0||c<=col+y||x==0&&y==0)continue;if(d==m[r+x][col+y])s++;}}if(s>5)l+=s-2;if(d)dk++;}l+=Math.abs(100*dk/c/c-50)/5*10;return l;},_data:function(){var rs=getRSB(this.t),buf=new BB();for(var i=0;i<this.dl.length;i++){var d=this.dl[i];buf.put(d.getMode(),4);buf.put(d.getLength(),8);d.write(buf);}var total=0;for(var i=0;i<rs.length;i++)total+=rs[i].d;if(buf.getLengthInBits()+4<=total*8)buf.put(0,4);while(buf.getLengthInBits()%8!=0)buf.putBit(false);while(buf.getLengthInBits()<total*8){buf.put(0xEC,8);if(buf.getLengthInBits()<total*8)buf.put(0x11,8);}var off=0,mdc=0,mec=0,dc=[],ec=[];for(var r=0;r<rs.length;r++){var dcc=rs[r].d,ecc=rs[r].t-dcc;mdc=Math.max(mdc,dcc);mec=Math.max(mec,ecc);dc[r]=[];for(var i=0;i<dcc;i++)dc[r][i]=0xff&buf.buf[i+off];off+=dcc;var rp=getECP(ecc),raw=new Poly(dc[r],rp.l()-1),mod2=raw.mod(rp);ec[r]=[];for(var i=0;i<rp.l()-1;i++){var mi=i+mod2.l()-(rp.l()-1);ec[r][i]=(mi>=0)?mod2.g(mi):0;}}var tcc=0;for(var i=0;i<rs.length;i++)tcc+=rs[i].t;var data=new Array(tcc),idx=0;for(var i=0;i<mdc;i++)for(var r=0;r<rs.length;r++)if(i<dc[r].length)data[idx++]=dc[r][i];for(var i=0;i<mec;i++)for(var r=0;r<rs.length;r++)if(i<ec[r].length)data[idx++]=ec[r][i];return data;}};
+  function getType(s){for(var t=1;t<40;t++){var rs=getRSB(t),total=0;for(var i=0;i<rs.length;i++)total+=rs[i].d;if(total>=unescape(encodeURIComponent(s)).length+3)return t;}return 40;}
+  return {matrix:function(text){var t=getType(text),q=new Model(t);q.add(text);q.make();var c=q.mc,m=[];for(var r=0;r<c;r++){m[r]=[];for(var col=0;col<c;col++)m[r][col]=q.isDark(r,col);}return m;}};
+})();
+
+/* ═══════════════════════════════════════════
+   DESSIN DU QR CODE STYLÉ
+═══════════════════════════════════════════ */
+var DARK = '#41443c';
+var LIGHT = '#e9f6de';
+
+function drawFinder(ctx, px, py, tileSize, cornerR) {
+  var s = tileSize;
+  var r = s * cornerR;
+  // Carré extérieur
+  ctx.fillStyle = DARK;
+  ctx.beginPath();
+  ctx.roundRect(px, py, s*7, s*7, r);
+  ctx.fill();
+  // Gap blanc
+  ctx.fillStyle = LIGHT;
+  ctx.beginPath();
+  ctx.roundRect(px+s, py+s, s*5, s*5, r * 0.65);
+  ctx.fill();
+  // Carré intérieur
+  ctx.fillStyle = DARK;
+  ctx.beginPath();
+  ctx.roundRect(px+s*2, py+s*2, s*3, s*3, r * 0.4);
+  ctx.fill();
+}
+
+function drawStyledQR(canvas, text, initiales) {
+  var matrix = QRC.matrix(text);
+  var ctx = canvas.getContext('2d');
+  var S = canvas.width;
+  var n = matrix.length;
+  var tile = S / n;
+  var modSize = 0.92; // modules grands
+  var cornerR = 0.52; // arrondi des coins
+
+  ctx.clearRect(0, 0, S, S);
+  ctx.fillStyle = LIGHT;
+  ctx.fillRect(0, 0, S, S);
+
+  // Zones finder à ignorer
+  var skip = new Set();
+  [[0,0],[0,n-7],[n-7,0]].forEach(function(f) {
+    for (var r=f[0]-1;r<=f[0]+7;r++)
+      for (var c=f[1]-1;c<=f[1]+7;c++)
+        skip.add(r+','+c);
+  });
+
+  // Modules de données — carrés, grands
+  for (var row=0; row<n; row++) {
+    for (var col=0; col<n; col++) {
+      if (skip.has(row+','+col)) continue;
+      if (!matrix[row][col]) continue;
+      var cx = col*tile + tile/2;
+      var cy = row*tile + tile/2;
+      var half = (tile * modSize) / 2;
+      ctx.fillStyle = DARK;
+      ctx.fillRect(cx-half, cy-half, half*2, half*2);
+    }
+  }
+
+  // Coins arrondis
+  drawFinder(ctx, 0,        0,        tile, cornerR);
+  drawFinder(ctx, (n-7)*tile, 0,      tile, cornerR);
+  drawFinder(ctx, 0,        (n-7)*tile, tile, cornerR);
+
+  // Initiales — cercle plein, sans contour
+  var cr = tile * 3.0;
+  var cx2 = S/2, cy2 = S/2;
+  // Effacer la zone derrière le cercle (fond blanc)
+  ctx.fillStyle = LIGHT;
+  ctx.beginPath();
+  ctx.arc(cx2, cy2, cr + tile*0.6, 0, Math.PI*2);
+  ctx.fill();
+  // Cercle plein
+  ctx.fillStyle = DARK;
+  ctx.beginPath();
+  ctx.arc(cx2, cy2, cr, 0, Math.PI*2);
+  ctx.fill();
+  // Texte initiales
+  ctx.fillStyle = LIGHT;
+  var fs = Math.round(cr * 0.48);
+  ctx.font = 'italic ' + fs + 'px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initiales || 'S & T', cx2, cy2);
+}
+
+/* ═══════════════════════════════════════════
+   LOGIQUE APP
+═══════════════════════════════════════════ */
+var lastCanvas = null;
+var lastNom    = '';
+
+function buildQRText(nom, cat, nomtable, numtable) {
+  var payload = { c: cat, t: nomtable, n: numtable };
+  var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  return nom + '\nWQR:' + encoded;
+}
+
+function generer() {
+  var nom      = document.getElementById('nom').value.trim();
+  var cat      = document.getElementById('categorie').value;
+  var nomtable = document.getElementById('nomtable').value.trim();
+  var numtable = document.getElementById('numtable').value.trim();
+  var initiales= document.getElementById('initiales').value.trim() || 'S & T';
+
+  if (!nom) { alert('Merci de saisir le nom de l\'invité.'); return; }
+
+  lastNom = nom;
+  var qrText = buildQRText(nom, cat, nomtable, numtable);
+
+  var panel = document.getElementById('qr-panel');
+  panel.innerHTML = `
+    <div class="qr-outer-frame">
+      <canvas id="qr-canvas" width="220" height="220"></canvas>
+      <div class="qr-name-display">${nom}</div>
+      <div class="qr-sub-display">Caméra iOS → affiche le nom</div>
+    </div>
+    <div class="chips">
+      <div class="chip">
+        <div class="chip-lbl">Catégorie</div>
+        <div class="chip-val">${cat || '—'}</div>
+      </div>
+      <div class="chip">
+        <div class="chip-lbl">N° de table</div>
+        <div class="chip-val">${numtable || '—'}</div>
+      </div>
+      <div class="chip full">
+        <div class="chip-lbl">Nom de la table</div>
+        <div class="chip-val">${nomtable || '—'}</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-dl" onclick="telecharger()">↓ Télécharger PNG</button>
+      <button class="btn-new" onclick="nouveau()">+ Nouvel invité</button>
+    </div>
+  `;
+
+  var canvas = document.getElementById('qr-canvas');
+  drawStyledQR(canvas, qrText, initiales);
+  lastCanvas = canvas;
+}
+
+function telecharger() {
+  if (!lastCanvas) return;
+  var a = document.createElement('a');
+  a.download = 'qr-' + lastNom.replace(/\s+/g, '-').toLowerCase() + '.png';
+  a.href = lastCanvas.toDataURL('image/png');
+  a.click();
+}
+
+function nouveau() {
+  ['nom','categorie','nomtable','numtable'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('qr-panel').innerHTML = `
+    <div class="empty">
+      <div class="empty-icon">◈</div>
+      <p>Remplis le formulaire<br>et génère le QR code<br>de ton invité</p>
+    </div>`;
+  document.getElementById('nom').focus();
+}
+</script>
+</body>
+</html>
