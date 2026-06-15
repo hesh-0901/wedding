@@ -46,7 +46,7 @@
     import { db, doc, setDoc } from "./firebase-config.js";
 
     let qrcodeContainer = document.getElementById("qrcode");
-    let qr = new QRCode(qrcodeContainer, { width: 200, height: 200 });
+    let qr = new QRCode(qrcodeContainer, { width: 220, height: 220 });
 
     document.getElementById("btnGenerer").addEventListener("click", async () => {
       const nom = document.getElementById("nom").value;
@@ -59,27 +59,36 @@
         return;
       }
 
-      // Générer un ID unique basé sur le temps actuel
+      // Création d'un ID unique pour cet invité
       const inviteId = "INV-" + Date.now();
 
+      // On prépare l'objet complet qui va ALLER dans le QR Code
+      const donnéesComplètes = {
+        mariage: "MarieJaphete2026",
+        id: inviteId,
+        nom: nom,
+        cat: categorie,
+        tNom: nomTable,
+        tNum: numTable
+      };
+
+      // 1. Génération immédiate du QR Code (Fonctionne même si Firebase échoue)
+      qr.clear();
+      qr.makeCode(JSON.stringify(donnéesComplètes));
+
+      // 2. Sauvegarde en tâche de fond sur Firebase (si connecté)
       try {
-        // Enregistrement des données dans la collection "invites" de Firestore
         await setDoc(doc(db, "invites", inviteId), {
           nom: nom,
           categorie: categorie,
           nomTable: nomTable,
           numTable: numTable,
-          statut: "Attente" // Pratique pour savoir s'il est déjà entré plus tard !
+          statut: "Généré"
         });
-
-        // Le QR Code ne contient PLUS que l'identifiant unique
-        qr.clear();
-        qr.makeCode(inviteId);
-        
-        alert("Invité enregistré avec succès dans Firebase !");
+        alert("QR Code généré et synchronisé avec Firebase !");
       } catch (error) {
-        console.error("Erreur Firebase:", error);
-        alert("Erreur lors de l'enregistrement dans la base de données.");
+        console.warn("Firebase déconnecté, mais le QR Code a été créé localement.");
+        alert("QR Code généré avec succès ! (Note : Non synchronisé sur le cloud, pas d'internet)");
       }
     });
   </script>
