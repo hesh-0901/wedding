@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Générateur QR · Mariage</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Générateur QR · Mariage Japhète & Marie</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <header>
-  <div class="header-ornament">✦ &nbsp; Mariage &nbsp; ✦</div>
+  <div class="header-ornament">✦ &nbsp; Mariage Japhète & Marie &nbsp; ✦</div>
   <h1>Générateur de QR codes</h1>
   <p>Un QR unique par invité · Design élégant · 100 % offline</p>
 </header>
@@ -21,7 +22,7 @@
 
     <div class="field">
       <label>Nom complet</label>
-      <input type="text" id="nom" placeholder="ex : Hénoch SHUNGU" autocomplete="off">
+      <input type="text" id="nom" placeholder="ex : Marie Dupont" autocomplete="off">
     </div>
 
     <div class="field">
@@ -71,19 +72,30 @@
 <footer>Aucune connexion requise &nbsp;·&nbsp; Données 100 % privées &nbsp;·&nbsp; Fichier autonome</footer>
 
 <script>
-/* ═══════════════════════════════════════════
-   QR CODE ENGINE (pur JS, sans dépendance)
-═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   INFOS MARIAGE — encodées dans tous les QR codes
+   La caméra iOS affiche : Nom + ces infos en clair
+═══════════════════════════════════════════════════════ */
+var WEDDING_INFO = [
+  'Mariage Japhète & Marie',
+  'Lieu : Q. Kalubwe, Av. des Écoles N°01, Lubumbashi (ESPACE VERT)',
+  '10h00 : Civil  |  12h30 : Religieux  |  16h00-19h00 : Soirée',
+  'NB : Cadeaux en espèces'
+].join('\n');
+
+/* ═══════════════════════════════════════════════════════
+   QR CODE ENGINE — pur JS, sans dépendance externe
+═══════════════════════════════════════════════════════ */
 var QRC = (function () {
-  var G15 = (1<<10)|(1<<8)|(1<<5)|(1<<4)|(1<<2)|(1<<1)|(1<<0);
-  var G18 = (1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8)|(1<<5)|(1<<2)|(1<<0);
+  var G15  = (1<<10)|(1<<8)|(1<<5)|(1<<4)|(1<<2)|(1<<1)|(1<<0);
+  var G18  = (1<<12)|(1<<11)|(1<<10)|(1<<9)|(1<<8)|(1<<5)|(1<<2)|(1<<0);
   var G15M = (1<<14)|(1<<12)|(1<<10)|(1<<4)|(1<<1);
-  var PPT = [[], [6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]];
+  var PPT  = [[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],[6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90],[6,28,50,72,94],[6,26,50,74,98],[6,30,54,78,102],[6,28,54,80,106],[6,32,58,84,110],[6,30,58,86,114],[6,34,62,90,118],[6,26,50,74,98,122],[6,30,54,78,102,126],[6,26,52,78,104,130],[6,30,56,82,108,134],[6,34,60,86,112,138],[6,30,58,86,114,142],[6,34,62,90,118,146],[6,30,54,78,102,126,150],[6,24,50,76,102,128,154],[6,28,54,80,106,132,158],[6,32,58,84,110,136,162],[6,26,54,82,110,138,166],[6,30,58,86,114,142,170]];
   var RSBT = [[1,26,19],[1,26,16],[1,26,13],[1,26,9],[1,44,34],[1,44,28],[1,44,22],[1,44,16],[1,70,55],[1,70,44],[2,35,17],[2,35,13],[1,100,80],[2,50,32],[2,50,24],[4,25,9],[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12],[2,86,68],[4,43,27],[4,43,19],[4,43,15],[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14],[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15],[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13],[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16],[4,101,81],[1,80,50,4,81,51],[4,50,22,4,51,23],[3,36,12,8,37,13],[2,116,92,2,117,93],[6,58,36,2,59,37],[4,46,20,6,47,21],[7,42,14,4,43,15],[4,133,107],[8,59,37,1,60,38],[8,44,20,4,45,21],[12,33,11,4,34,12],[3,145,115,1,146,116],[4,64,40,5,65,41],[11,36,16,5,37,17],[11,36,12,5,37,13],[5,109,87,1,110,88],[5,65,41,5,66,42],[5,54,24,7,55,25],[11,36,12],[5,122,98,1,123,99],[7,73,45,3,74,46],[15,43,19,2,44,20],[3,45,15,13,46,16],[1,135,107,5,136,108],[10,74,46,1,75,47],[1,50,22,15,51,23],[2,42,14,17,43,15],[5,150,120,1,151,121],[9,69,43,4,70,44],[17,50,22,1,51,23],[2,42,14,19,43,15],[3,141,113,4,142,114],[3,70,44,11,71,45],[17,47,21,4,48,22],[9,39,13,16,40,14],[3,135,107,5,136,108],[3,67,41,13,68,42],[15,54,24,5,55,25],[15,43,15,10,44,16],[4,144,116,4,145,117],[17,68,42],[17,50,22,6,51,23],[19,46,16,6,47,17],[2,139,111,7,140,112],[17,74,46],[7,54,24,16,55,25],[34,37,13],[4,151,121,5,152,122],[4,75,47,14,76,48],[11,54,24,14,55,25],[16,45,15,14,46,16],[6,147,117,4,148,118],[6,73,45,14,74,46],[11,54,24,16,55,25],[30,46,16,2,47,17],[8,132,106,4,133,107],[8,75,47,13,76,48],[7,54,24,22,55,25],[22,45,15,13,46,16],[10,142,114,2,143,115],[19,74,46,4,75,47],[28,50,22,6,51,23],[33,46,16,4,47,17],[8,152,122,4,153,123],[22,73,45,3,74,46],[8,53,23,26,54,24],[12,45,15,28,46,16],[3,147,117,10,148,118],[3,73,45,23,74,46],[4,54,24,31,55,25],[11,45,15,31,46,16],[7,146,116,7,147,117],[21,73,45,7,74,46],[1,53,23,37,54,24],[19,45,15,26,46,16],[5,145,115,10,146,116],[19,75,47,10,76,48],[15,54,24,25,55,25],[23,45,15,25,46,16],[13,145,115,3,146,116],[2,74,46,29,75,47],[42,54,24,1,55,25],[23,45,15,28,46,16],[17,145,115],[10,74,46,23,75,47],[10,54,24,35,55,25],[19,45,15,35,46,16],[17,145,115,1,146,116],[14,74,46,21,75,47],[29,54,24,19,55,25],[11,45,15,46,46,16],[13,145,115,6,146,116],[14,74,46,23,75,47],[44,54,24,7,55,25],[59,46,16,1,47,17],[12,151,121,7,152,122],[12,75,47,26,76,48],[39,54,24,14,55,25],[22,45,15,41,46,16],[6,151,121,14,152,122],[6,75,47,34,76,48],[46,54,24,10,55,25],[2,45,15,64,46,16],[17,152,122,4,153,123],[29,74,46,14,75,47],[49,54,24,10,55,25],[24,45,15,46,46,16],[4,152,122,18,153,123],[13,74,46,32,75,47],[48,54,24,14,55,25],[42,45,15,32,46,16],[20,147,117,4,148,118],[40,75,47,7,76,48],[43,54,24,22,55,25],[10,45,15,67,46,16],[19,148,118,6,149,119],[18,75,47,31,76,48],[34,54,24,34,55,25],[20,45,15,61,46,16]];
-  var EX = new Array(256), LG = new Array(256);
-  for (var i=0;i<8;i++) EX[i]=1<<i;
-  for (var i=8;i<256;i++) EX[i]=EX[i-4]^EX[i-5]^EX[i-6]^EX[i-8];
-  for (var i=0;i<255;i++) LG[EX[i]]=i;
+  var EX=new Array(256),LG=new Array(256);
+  for(var i=0;i<8;i++)EX[i]=1<<i;
+  for(var i=8;i<256;i++)EX[i]=EX[i-4]^EX[i-5]^EX[i-6]^EX[i-8];
+  for(var i=0;i<255;i++)LG[EX[i]]=i;
   function ge(n){while(n<0)n+=255;while(n>=256)n-=255;return EX[n];}
   function gl(n){return LG[n];}
   function bd(d){var n=0;while(d!=0){n++;d>>>=1;}return n;}
@@ -105,123 +117,154 @@ var QRC = (function () {
   return {matrix:function(text){var t=getType(text),q=new Model(t);q.add(text);q.make();var c=q.mc,m=[];for(var r=0;r<c;r++){m[r]=[];for(var col=0;col<c;col++)m[r][col]=q.isDark(r,col);}return m;}};
 })();
 
-/* ═══════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    DESSIN DU QR CODE STYLÉ
-═══════════════════════════════════════════ */
-var DARK = '#41443c';
+   · Modules : carrés, grands (92%)
+   · Coins   : arrondis avec contour renforcé (double trait)
+   · Centre  : cercle plein sans contour + initiales
+═══════════════════════════════════════════════════════ */
+var DARK  = '#41443c';
 var LIGHT = '#e9f6de';
 
-function drawFinder(ctx, px, py, tileSize, cornerR) {
-  var s = tileSize;
-  var r = s * cornerR;
-  // Carré extérieur
+function drawFinder(ctx, px, py, s, r) {
+  /* Contour renforcé : on dessine d'abord un carré légèrement plus grand */
+  var outerR  = s * r;
+  var gapR    = s * r * 0.6;
+  var innerR  = s * r * 0.38;
+  var bw      = s * 0.18; /* épaisseur du bord = 18% du tile → trait fort */
+
+  /* Halo légèrement plus grand pour renforcer visuellement le contour */
   ctx.fillStyle = DARK;
   ctx.beginPath();
-  ctx.roundRect(px, py, s*7, s*7, r);
+  ctx.roundRect(px - bw*0.3, py - bw*0.3, s*7 + bw*0.6, s*7 + bw*0.6, outerR + bw*0.3);
   ctx.fill();
-  // Gap blanc
+
+  /* Carré extérieur principal */
+  ctx.fillStyle = DARK;
+  ctx.beginPath();
+  ctx.roundRect(px, py, s*7, s*7, outerR);
+  ctx.fill();
+
+  /* Gap blanc */
   ctx.fillStyle = LIGHT;
   ctx.beginPath();
-  ctx.roundRect(px+s, py+s, s*5, s*5, r * 0.65);
+  ctx.roundRect(px + s, py + s, s*5, s*5, gapR);
   ctx.fill();
-  // Carré intérieur
+
+  /* Carré intérieur */
   ctx.fillStyle = DARK;
   ctx.beginPath();
-  ctx.roundRect(px+s*2, py+s*2, s*3, s*3, r * 0.4);
+  ctx.roundRect(px + s*2, py + s*2, s*3, s*3, innerR);
   ctx.fill();
 }
 
 function drawStyledQR(canvas, text, initiales) {
-  var matrix = QRC.matrix(text);
-  var ctx = canvas.getContext('2d');
-  var S = canvas.width;
-  var n = matrix.length;
-  var tile = S / n;
-  var modSize = 0.92; // modules grands
-  var cornerR = 0.52; // arrondi des coins
+  var matrix  = QRC.matrix(text);
+  var ctx     = canvas.getContext('2d');
+  var S       = canvas.width;
+  var n       = matrix.length;
+  var tile    = S / n;
+  var modSize = 0.93;
+  var cornerR = 0.55;
 
   ctx.clearRect(0, 0, S, S);
   ctx.fillStyle = LIGHT;
   ctx.fillRect(0, 0, S, S);
 
-  // Zones finder à ignorer
+  /* Zones finder → à ignorer dans la boucle modules */
   var skip = new Set();
   [[0,0],[0,n-7],[n-7,0]].forEach(function(f) {
-    for (var r=f[0]-1;r<=f[0]+7;r++)
-      for (var c=f[1]-1;c<=f[1]+7;c++)
+    for (var r=f[0]-1; r<=f[0]+7; r++)
+      for (var c=f[1]-1; c<=f[1]+7; c++)
         skip.add(r+','+c);
   });
 
-  // Modules de données — carrés, grands
+  /* Modules de données — carrés, grands */
   for (var row=0; row<n; row++) {
     for (var col=0; col<n; col++) {
       if (skip.has(row+','+col)) continue;
       if (!matrix[row][col]) continue;
-      var cx = col*tile + tile/2;
-      var cy = row*tile + tile/2;
+      var cx   = col*tile + tile/2;
+      var cy   = row*tile + tile/2;
       var half = (tile * modSize) / 2;
       ctx.fillStyle = DARK;
       ctx.fillRect(cx-half, cy-half, half*2, half*2);
     }
   }
 
-  // Coins arrondis
-  drawFinder(ctx, 0,        0,        tile, cornerR);
-  drawFinder(ctx, (n-7)*tile, 0,      tile, cornerR);
-  drawFinder(ctx, 0,        (n-7)*tile, tile, cornerR);
+  /* Coins arrondis renforcés */
+  drawFinder(ctx, 0,          0,          tile, cornerR);
+  drawFinder(ctx, (n-7)*tile, 0,          tile, cornerR);
+  drawFinder(ctx, 0,          (n-7)*tile, tile, cornerR);
 
-  // Initiales — cercle plein, sans contour
-  var cr = tile * 3.0;
-  var cx2 = S/2, cy2 = S/2;
-  // Effacer la zone derrière le cercle (fond blanc)
+  /* Initiales — grand cercle plein, sans contour */
+  var cr  = tile * 3.6;   /* plus grand qu'avant */
+  var cx2 = S / 2;
+  var cy2 = S / 2;
+
+  /* Zone de nettoyage autour du cercle (efface les modules qui se cachent derrière) */
   ctx.fillStyle = LIGHT;
   ctx.beginPath();
-  ctx.arc(cx2, cy2, cr + tile*0.6, 0, Math.PI*2);
+  ctx.arc(cx2, cy2, cr + tile * 0.7, 0, Math.PI*2);
   ctx.fill();
-  // Cercle plein
+
+  /* Cercle plein — aucun contour */
   ctx.fillStyle = DARK;
   ctx.beginPath();
   ctx.arc(cx2, cy2, cr, 0, Math.PI*2);
   ctx.fill();
-  // Texte initiales
+
+  /* Texte initiales */
   ctx.fillStyle = LIGHT;
-  var fs = Math.round(cr * 0.48);
+  var fs = Math.round(cr * 0.46);
   ctx.font = 'italic ' + fs + 'px Georgia, serif';
-  ctx.textAlign = 'center';
+  ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(initiales || 'S & T', cx2, cy2);
+  ctx.fillText(initiales || 'J & M', cx2, cy2);
 }
 
-/* ═══════════════════════════════════════════
-   LOGIQUE APP
-═══════════════════════════════════════════ */
-var lastCanvas = null;
-var lastNom    = '';
-
+/* ═══════════════════════════════════════════════════════
+   CONSTRUCTION DU TEXTE QR
+   Structure lisible à la caméra iOS :
+   ─────────────────────────────────
+   [Nom de l'invité]
+   Mariage Japhète & Marie
+   Lieu : ...
+   10h00 : Civil | 12h30 : Religieux | ...
+   NB : Cadeaux en espèces
+   ─────────────────────────────────
+   Données secrètes (app lecteur) :
+   WQR:[base64 JSON catégorie+table]
+═══════════════════════════════════════════════════════ */
 function buildQRText(nom, cat, nomtable, numtable) {
   var payload = { c: cat, t: nomtable, n: numtable };
   var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  return nom + '\nWQR:' + encoded;
+  return nom + '\n' + WEDDING_INFO + '\nWQR:' + encoded;
 }
 
+/* ═══════════════════════════════════════════════════════
+   LOGIQUE APP
+═══════════════════════════════════════════════════════ */
+var lastCanvas = null;
+var lastNom    = '';
+
 function generer() {
-  var nom      = document.getElementById('nom').value.trim();
-  var cat      = document.getElementById('categorie').value;
-  var nomtable = document.getElementById('nomtable').value.trim();
-  var numtable = document.getElementById('numtable').value.trim();
-  var initiales= document.getElementById('initiales').value.trim() || 'S & T';
+  var nom       = document.getElementById('nom').value.trim();
+  var cat       = document.getElementById('categorie').value;
+  var nomtable  = document.getElementById('nomtable').value.trim();
+  var numtable  = document.getElementById('numtable').value.trim();
+  var initiales = document.getElementById('initiales').value.trim() || 'J & M';
 
   if (!nom) { alert('Merci de saisir le nom de l\'invité.'); return; }
 
   lastNom = nom;
   var qrText = buildQRText(nom, cat, nomtable, numtable);
 
-  var panel = document.getElementById('qr-panel');
-  panel.innerHTML = `
+  document.getElementById('qr-panel').innerHTML = `
     <div class="qr-outer-frame">
-      <canvas id="qr-canvas" width="220" height="220"></canvas>
+      <canvas id="qr-canvas" width="240" height="240"></canvas>
       <div class="qr-name-display">${nom}</div>
-      <div class="qr-sub-display">Caméra iOS → affiche le nom</div>
+      <div class="qr-sub-display">Nom + infos mariage visibles à la caméra iOS</div>
     </div>
     <div class="chips">
       <div class="chip">
@@ -257,7 +300,7 @@ function telecharger() {
 }
 
 function nouveau() {
-  ['nom','categorie','nomtable','numtable'].forEach(function(id) {
+  ['nom', 'categorie', 'nomtable', 'numtable'].forEach(function(id) {
     document.getElementById(id).value = '';
   });
   document.getElementById('qr-panel').innerHTML = `
