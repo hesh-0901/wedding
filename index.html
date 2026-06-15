@@ -5,20 +5,135 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mariage de Marie & Japhète</title>
   <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Ajustements graphiques spécifiques pour la page d'accueil */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .brand-logo-container {
+      width: 50px;
+      height: 50px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: white;
+      color: var(--gold);
+    }
+
+    .nav-container {
+      max-width: 500px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .btn-large {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 20px;
+      text-decoration: none;
+      background: white;
+      color: var(--dark);
+      border: 1px solid var(--border);
+      padding: 24px 28px;
+      font-size: 1.2rem;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 4px 12px rgba(65, 68, 60, 0.02);
+    }
+
+    .btn-large:hover {
+      border-color: var(--gold);
+      background: var(--light);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(65, 68, 60, 0.05);
+    }
+
+    .btn-large-text {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+
+    .btn-large-title {
+      font-size: 1.2rem;
+      color: var(--text);
+    }
+
+    .btn-large-subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-family: system-ui, -apple-system, sans-serif;
+      margin-top: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .icon-bootstrap {
+      width: 24px;
+      height: 24px;
+      fill: none;
+      stroke: var(--dark);
+      stroke-width: 1.5;
+      flex-shrink: 0;
+      transition: stroke 0.3s;
+    }
+
+    .btn-large:hover .icon-bootstrap {
+      stroke: var(--gold);
+    }
+  </style>
 </head>
 <body>
 
-  <div class="container" style="margin-top: 10vh;">
-    <h1>Mariage de Marie & Japhète</h1>
-    <h2 style="font-style: italic; font-size: 1.1rem; color: var(--muted);">Portail de Gestion des Invitations</h2>
+  <div class="container" style="margin-top: 8vh;">
+    
+    <div class="brand-header">
+      <div class="brand-logo-container">
+        <svg class="icon-bootstrap" style="stroke: var(--gold);" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <h1>Marie & Japhète</h1>
+      <h2 style="font-style: italic; font-size: 1.1rem; color: var(--muted); margin-top: 5px;">Portail Privé de Gestion</h2>
+    </div>
 
     <div class="nav-container">
+      
       <a href="générateur.html" class="btn-large">
-        ✍️ Créer un QR Code (Invitation)
+        <svg class="icon-bootstrap" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+          <rect x="18" y="18" width="3" height="3" rx="0.5"/>
+          <path d="M14 17h1v1h-1zm3 0h1v1h-1zm1-3h1v1h-1zm-1 1h1v1h-1z"/>
+        </svg>
+        <div class="btn-large-text">
+          <span class="btn-large-title">Créer une Invitation</span>
+          <span class="btn-large-subtitle">Générer un accès & enregistrer</span>
+        </div>
       </a>
+
       <a href="lecteur.html" class="btn-large">
-        📷 Ouvrir le Lecteur (Accès Jour J)
+        <svg class="icon-bootstrap" viewBox="0 0 24 24">
+          <path d="M4 4h4V2H4a2 2 0 0 0-2 2v4h2V4zm16-2h-4v2h4v4h2V4a2 2 0 0 0-2-2zM4 20h4v2H4a2 2 0 0 1-2-2v-4h2v4zm16 2h-4v-2h4v-4h2v4a2 2 0 0 1-2 2zM7 12h10v2H7z"/>
+        </svg>
+        <div class="btn-large-text">
+          <span class="btn-large-title">Ouvrir le Lecteur</span>
+          <span class="btn-large-subtitle">Contrôle d'accès en direct</span>
+        </div>
       </a>
+
     </div>
   </div>
 
