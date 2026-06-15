@@ -7,95 +7,37 @@
   <link rel="stylesheet" href="style.css">
   
   <style>
-    /* Ajustements graphiques spécifiques pour la page d'accueil */
-    .brand-header {
-      text-align: center;
-      margin-bottom: 50px;
-    }
-
+    .brand-header { text-align: center; margin-bottom: 50px; }
     .brand-logo-container {
-      width: 50px;
-      height: 50px;
-      margin: 0 auto 20px auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid var(--border);
-      border-radius: 50%;
-      background: white;
-      color: var(--gold);
+      width: 50px; height: 50px; margin: 0 auto 20px auto;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border); border-radius: 50%; background: white; color: var(--gold);
     }
-
-    .nav-container {
-      max-width: 500px;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
+    .nav-container { max-width: 500px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
     .btn-large {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 20px;
-      text-decoration: none;
-      background: white;
-      color: var(--dark);
-      border: 1px solid var(--border);
-      padding: 24px 28px;
-      font-size: 1.2rem;
-      border-radius: 12px;
+      display: flex; align-items: center; justify-content: flex-start; gap: 20px;
+      text-decoration: none; background: white; color: var(--dark); border: 1px solid var(--border);
+      padding: 24px 28px; font-size: 1.2rem; border-radius: 12px;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 12px rgba(65, 68, 60, 0.02);
     }
-
     .btn-large:hover {
-      border-color: var(--gold);
-      background: var(--light);
-      transform: translateY(-2px);
+      border-color: var(--gold); background: var(--light); transform: translateY(-2px);
       box-shadow: 0 10px 20px rgba(65, 68, 60, 0.05);
     }
-
-    .btn-large-text {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      text-align: left;
-    }
-
-    .btn-large-title {
-      font-size: 1.2rem;
-      color: var(--text);
-    }
-
+    .btn-large-text { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+    .btn-large-title { font-size: 1.2rem; color: var(--text); }
     .btn-large-subtitle {
-      font-size: 0.8rem;
-      color: var(--muted);
-      font-family: system-ui, -apple-system, sans-serif;
-      margin-top: 20px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: 0.8rem; color: var(--muted); font-family: system-ui, -apple-system, sans-serif;
+      margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;
     }
-
-    .icon-bootstrap {
-      width: 24px;
-      height: 24px;
-      fill: none;
-      stroke: var(--dark);
-      stroke-width: 1.5;
-      flex-shrink: 0;
-      transition: stroke 0.3s;
-    }
-
-    .btn-large:hover .icon-bootstrap {
-      stroke: var(--gold);
-    }
+    .icon-bootstrap { width: 24px; height: 24px; fill: none; stroke: var(--dark); stroke-width: 1.5; flex-shrink: 0; transition: stroke 0.3s; }
+    .btn-large:hover .icon-bootstrap { stroke: var(--gold); }
   </style>
 </head>
 <body>
 
-  <div class="container" style="margin-top: 8vh;">
+  <div class="container" style="margin-top: 5vh;">
     
     <div class="brand-header">
       <div class="brand-logo-container">
@@ -111,10 +53,8 @@
       
       <a href="générateur.html" class="btn-large">
         <svg class="icon-bootstrap" viewBox="0 0 24 24">
-          <rect x="3" y="3" width="7" height="7" rx="1"/>
-          <rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/>
-          <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3" rx="0.5"/>
           <rect x="18" y="18" width="3" height="3" rx="0.5"/>
           <path d="M14 17h1v1h-1zm3 0h1v1h-1zm1-3h1v1h-1zm-1 1h1v1h-1z"/>
         </svg>
@@ -131,6 +71,19 @@
         <div class="btn-large-text">
           <span class="btn-large-title">Ouvrir le Lecteur</span>
           <span class="btn-large-subtitle">Contrôle d'accès en direct</span>
+        </div>
+      </a>
+
+      <a href="invités.html" class="btn-large">
+        <svg class="icon-bootstrap" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <div class="btn-large-text">
+          <span class="btn-large-title">Liste des Invités</span>
+          <span class="btn-large-subtitle">Consulter, filtrer & rechercher</span>
         </div>
       </a>
 
