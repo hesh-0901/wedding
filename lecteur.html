@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lecteur d'Accès - Marie & Japhète</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+
+  <div class="container">
+    <a href="index.html" class="btn-back">← Retour à l'accueil</a>
+    
+    <h1>Lecteur de Contrôle d'Accès</h1>
+
+    <div class="section">
+      <div id="reader"></div>
+
+      <div id="ticket-resultat" class="ticket">
+        <div class="ticket-title">Invitation Validée ✨</div>
+        <div class="guest-name" id="res-nom">-</div>
+        <div class="guest-category" id="res-categorie">-</div>
+        
+        <div class="table-info">
+          <div class="info-block">
+            <span>Table</span>
+            <strong id="res-nomTable">-</strong>
+          </div>
+          <div class="info-block">
+            <span>N° de Table</span>
+            <strong id="res-numTable">-</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      try {
+        const data = JSON.parse(decodedText);
+        
+        // Vérification de l'identifiant unique du mariage
+        if(data.mariage === "MarieJaphete2026") {
+          
+          document.getElementById("res-nom").innerText = data.nom;
+          document.getElementById("res-categorie").innerText = data.cat;
+          document.getElementById("res-nomTable").innerText = data.tNom;
+          document.getElementById("res-numTable").innerText = data.tNum;
+          
+          // On affiche le ticket stylisé bien organisé
+          document.getElementById("ticket-resultat").style.display = "block";
+          
+        } else {
+          alert("Attention : Ce QR code ne correspond pas au mariage de Marie & Japhète.");
+        }
+      } catch (e) {
+        alert("Code inconnu ou invalide.");
+      }
+    }
+
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  </script>
+</body>
+</html>
