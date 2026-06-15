@@ -131,7 +131,7 @@ function drawFinder(ctx, px, py, s, r) {
   var outerR  = s * r;
   var gapR    = s * r * 0.6;
   var innerR  = s * r * 0.38;
-  var bw      = s * 0.18; /* épaisseur du bord = 18% du tile → trait fort */
+  var bw = s * 0.12; /* épaisseur du bord = 18% du tile → trait fort */
 
   /* Halo légèrement plus grand pour renforcer visuellement le contour */
   ctx.fillStyle = DARK;
@@ -216,7 +216,7 @@ function drawStyledQR(canvas, text, initiales) {
 
   /* Texte initiales */
   ctx.fillStyle = LIGHT;
-  var fs = Math.round(cr * 0.46);
+  var fs = Math.round(cr * 0.55);
   ctx.font = 'italic ' + fs + 'px Georgia, serif';
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
