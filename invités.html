@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Liste des Invités - Marie & Japhète</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <a href="index.html" class="btn-back" style="display: flex; align-items: center; gap: 6px;">
+      <svg style="width:16px; height:16px; fill:none; stroke:var(--muted); stroke-width:2;" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Retour à l'accueil
+    </a>
+    
+    <h1>Liste des Invités Répertoriés</h1>
+
+    <div class="search-filter-bar">
+      <div style="flex: 2;">
+        <input type="text" id="inputRecherche" placeholder="Rechercher un invité par son nom...">
+      </div>
+      <div style="flex: 1;">
+        <select id="selectCategorie">
+          <option value="Tous">Toutes les catégories</option>
+          </select>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Nom Complet</th>
+            <th>Catégorie</th>
+            <th>Nom de Table</th>
+            <th>N° Table</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <tr>
+            <td colspan="4" style="text-align: center; color: var(--muted); font-style: italic; padding: 30px;">
+              Chargement des invités depuis le serveur...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase-config.js";
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let listeCompleteInvites = [];
+
+    // Fonction de récupération globale des données
+    async function chargerDonneesInvites() {
+      const tbody = document.getElementById("table-body");
+      
+      try {
+        const querySnapshot = await getDocs(collection(db, "invites"));
+        listeCompleteInvites = [];
+        const categoriesSet = new Set();
+
+        querySnapshot.forEach((doc) => {
+          const item = doc.data();
+          listeCompleteInvites.push(item);
+          if (item.categorie) {
+            categoriesSet.add(item.categorie);
+          }
+        });
+
+        // 1. Génération dynamique du menu de filtrage des catégories
+        genererMenuCategories(categoriesSet);
+
+        // 2. Premier affichage global du tableau
+        afficherDonnees(listeCompleteInvites);
+
+      } catch (error) {
+        console.error("Erreur d'accès Firebase : ", error);
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9b2c2c; padding: 30px;">Impossible de charger la liste (Vérifiez votre connexion internet).</td></tr>`;
+      }
+    }
+
+    // Génère les options du select de manière unique et dynamique
+    function genererMenuCategories(categoriesSet) {
+      const select = document.getElementById("selectCategorie");
+      // On remet à zéro sauf l'option "Tous"
+      select.innerHTML = '<option value="Tous">Toutes les catégories</option>';
+      
+      categoriesSet.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat;
+        select.appendChild(option);
+      });
+    }
+
+    // Effectue le rendu des lignes du tableau HTML
+    function afficherDonnees(listeFiltree) {
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+
+      if (listeFiltree.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--muted); font-style: italic; padding: 30px;">Aucun invité ne correspond à vos critères.</td></tr>`;
+        return;
+      }
+
+      listeFiltree.forEach(invite => {
+        const tr = document.createElement("tr");
+
+        // Formatage pro du numéro de table (01, 02 au lieu de 1, 2)
+        const numTableFormate = invite.numTable ? String(invite.numTable).padStart(2, '0') : '-';
+
+        tr.innerHTML = `
+          <td style="font-weight: 500;">${invite.nom || '-'}</td>
+          <td><span class="category-pill">${invite.categorie || '-'}</span></td>
+          <td style="color: var(--muted);">${invite.nomTable || '-'}</td>
+          <td style="font-variant-numeric: tabular-nums; font-weight: bold;">${numTableFormate}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Logique croisée de filtrage (Recherche textuelle + Catégorie déroulante)
+    function filtrerLesInvites() {
+      const rechercheTexte = document.getElementById("inputRecherche").value.toLowerCase().trim();
+      const categorieSelectionnee = document.getElementById("selectCategorie").value;
+
+      const resultatFiltre = listeCompleteInvites.filter(invite => {
+        const correspondTexte = invite.nom ? invite.nom.toLowerCase().includes(rechercheTexte) : false;
+        const correspondCategorie = (categorieSelectionnee === "Tous") || (invite.categorie === categorieSelectionnee);
+        
+        return correspondTexte && correspondCategorie;
+      });
+
+      afficherDonnees(resultatFiltre);
+    }
+
+    // Écouteurs d'événements pour le filtrage temps réel
+    document.getElementById("inputRecherche").addEventListener("input", filtrerLesInvites);
+    document.getElementById("selectCategorie").addEventListener("change", filtrerLesInvites);
+
+    // Lancement au chargement initial
+    chargerDonneesInvites();
+  </script>
+</body>
+</html>
