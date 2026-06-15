@@ -8,7 +8,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
   <style>
-    /* Style pour le bloc de résultat du QR Code */
+    /* Zone de résultat du QR Code */
     .qr-result-container {
       display: none;
       flex-direction: column;
@@ -28,15 +28,24 @@
       box-shadow: 0 4px 12px rgba(65, 68, 60, 0.02);
     }
 
-    .btn-download {
+    /* Conteneur des deux boutons d'action */
+    .actions-wrapper {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    @media (max-width: 500px) {
+      .actions-wrapper { flex-direction: column; }
+    }
+
+    .btn-action-premium {
+      flex: 1;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      background: white;
-      color: var(--dark);
-      border: 1px solid var(--gold);
-      padding: 12px 24px;
+      padding: 14px 20px;
       font-family: 'Georgia', serif;
       font-size: 0.95rem;
       border-radius: 6px;
@@ -44,12 +53,28 @@
       transition: all 0.2s ease;
     }
 
-    .btn-download:hover {
+    .btn-download-style {
+      background: white;
+      color: var(--dark);
+      border: 1px solid var(--gold);
+    }
+
+    .btn-download-style:hover {
       background: var(--light);
       border-color: var(--dark);
     }
 
-    .icon-action {
+    .btn-next-style {
+      background: var(--dark);
+      color: var(--cream);
+      border: 1px solid var(--dark);
+    }
+
+    .btn-next-style:hover {
+      background: var(--text);
+    }
+
+    .icon-svg-action {
       width: 18px;
       height: 18px;
       fill: none;
@@ -74,39 +99,50 @@
     <h1>Générer une Invitation</h1>
 
     <div class="section">
-      <div class="form-group">
-        <label>Nom complet de l'invité</label>
-        <input type="text" id="nom" placeholder="Ex: Jean Dupont">
-      </div>
-      <div class="form-group">
-        <label>Catégorie d'invité</label>
-        <select id="categorie">
-          <option value="Famille Proche">Famille Proche</option>
-          <option value="Famille Élargie">Famille Élargie</option>
-          <option value="Amis">Amis</option>
-          <option value="VIP">VIP</option>
-          <option value="Collègues">Collègues</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>Nom de la table</label>
-        <input type="text" id="nomTable" placeholder="Ex: Table Émeraude">
-      </div>
-      <div class="form-group">
-        <label>Numéro de table</label>
-        <input type="number" id="numTable" placeholder="Ex: 3">
-      </div>
-      <button class="btn-submit" id="btnGenerer">Enregistrer & Créer le QR Code</button>
+      <form id="formInvite" onsubmit="return false;">
+        <div class="form-group">
+          <label>Nom complet de l'invité</label>
+          <input type="text" id="nom" placeholder="Ex: Jean Dupont">
+        </div>
+        <div class="form-group">
+          <label>Catégorie d'invité</label>
+          <select id="categorie">
+            <option value="Famille Proche">Famille Proche</option>
+            <option value="Famille Élargie">Famille Élargie</option>
+            <option value="Amis">Amis</option>
+            <option value="VIP">VIP</option>
+            <option value="Collègues">Collègues</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nom de la table</label>
+          <input type="text" id="nomTable" placeholder="Ex: Table Émeraude">
+        </div>
+        <div class="form-group">
+          <label>Numéro de table</label>
+          <input type="number" id="numTable" placeholder="Ex: 3">
+        </div>
+        <button class="btn-submit" id="btnGenerer">Enregistrer & Créer le QR Code</button>
+      </form>
 
       <div id="qr-wrapper" class="qr-result-container">
         <div id="qrcode"></div>
         
-        <button class="btn-download" onclick="telechargerQR()">
-          <svg class="icon-action" viewBox="0 0 24 24">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-          </svg>
-          Télécharger l'image du QR Code
-        </button>
+        <div class="actions-wrapper">
+          <button class="btn-action-premium btn-download-style" onclick="telechargerQR()">
+            <svg class="icon-svg-action" viewBox="0 0 24 24">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+            </svg>
+            Télécharger
+          </button>
+
+          <button class="btn-action-premium btn-next-style" onclick="creerSuivant()">
+            Créer le suivant
+            <svg class="icon-svg-action" viewBox="0 0 24 24">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
     </div>
@@ -116,11 +152,10 @@
     import { db, doc, setDoc } from "./firebase-config.js";
 
     let qrcodeContainer = document.getElementById("qrcode");
-    // Configuration optimale du QR Code (taille idéale pour l'impression sur carton)
     let qr = new QRCode(qrcodeContainer, { 
       width: 250, 
       height: 250,
-      correctLevel : QRCode.CorrectLevel.H // Haute tolérance aux erreurs pour l'impression
+      correctLevel : QRCode.CorrectLevel.H
     });
 
     document.getElementById("btnGenerer").addEventListener("click", async () => {
@@ -145,14 +180,18 @@
         tNum: numTable
       };
 
-      // 1. Génération du QR Code
+      // 1. Génération visuelle du QR
       qr.clear();
       qr.makeCode(JSON.stringify(donnéesComplètes));
 
-      // Affichage du bloc de résultat
+      // Afficher le bloc d'actions
       document.getElementById("qr-wrapper").style.display = "flex";
 
-      // 2. Sauvegarde Cloud en arrière-plan
+      // Désactiver temporairement le bouton principal pour éviter les doubles clics
+      document.getElementById("btnGenerer").disabled = true;
+      document.getElementById("btnGenerer").style.opacity = "0.5";
+
+      // 2. Envoi cloud furtif
       try {
         await setDoc(doc(db, "invites", inviteId), {
           nom: nom,
@@ -162,30 +201,44 @@
           statut: "Généré"
         });
       } catch (error) {
-        console.warn("Mode déconnecté : Sauvegarde cloud ignorée.");
+        console.warn("Firebase hors-ligne. Enregistré localement.");
       }
     });
 
-    // Fonction de téléchargement de l'image générée
+    // Fonction de Téléchargement
     window.telechargerQR = function() {
       const nomInvite = document.getElementById("nom").value.trim() || "invite";
-      // Nettoyage du nom pour éviter les espaces et caractères spéciaux dans le nom du fichier
       const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
-      
-      // La bibliothèque qrcode.js génère une balise <img> à l'intérieur du conteneur #qrcode
       const imgQR = qrcodeContainer.querySelector("img");
       
       if (imgQR && imgQR.src) {
-        // Création d'un lien invisible pour déclencher le téléchargement
-        const lienTelechargement = document.createElement("a");
-        lienTelechargement.href = imgQR.src;
-        lienTelechargement.download = nomFichier;
-        document.body.appendChild(lienTelechargement);
-        lienTelechargement.click();
-        document.body.removeChild(lienTelechargement);
+        const lien = document.createElement("a");
+        lien.href = imgQR.src;
+        lien.download = nomFichier;
+        document.body.appendChild(lien);
+        lien.click();
+        document.body.removeChild(lien);
       } else {
-        alert("Une erreur est survenue lors de la préparation de l'image.");
+        alert("L'image du QR code se prépare, réessayez dans une seconde.");
       }
+    }
+
+    // Fonction Réinitialisation (Créer le suivant)
+    window.creerSuivant = function() {
+      // 1. Remise à zéro complète du formulaire
+      document.getElementById("formInvite").reset();
+
+      // 2. Masquage de la zone QR code
+      document.getElementById("qr-wrapper").style.display = "none";
+      qr.clear();
+
+      // 3. Réactivation du bouton de validation principal
+      const btnGenerer = document.getElementById("btnGenerer");
+      btnGenerer.disabled = false;
+      btnGenerer.style.opacity = "1";
+
+      // 4. Focus automatique sur le premier champ pour taper immédiatement
+      document.getElementById("nom").focus();
     }
   </script>
 </body>
