@@ -11,7 +11,6 @@
 
   <div class="container">
     <a href="index.html" class="btn-back">← Retour à l'accueil</a>
-    
     <h1>Générer une Invitation</h1>
 
     <div class="section">
@@ -37,17 +36,19 @@
         <label>Numéro de table</label>
         <input type="number" id="numTable" placeholder="Ex: 3">
       </div>
-      <button class="btn-submit" onclick="genererQR()">Générer le QR Code</button>
+      <button class="btn-submit" id="btnGenerer">Enregistrer & Créer le QR Code</button>
 
       <div id="qrcode"></div>
     </div>
   </div>
 
-  <script>
+  <script type="module">
+    import { db, doc, setDoc } from "./firebase-config.js";
+
     let qrcodeContainer = document.getElementById("qrcode");
     let qr = new QRCode(qrcodeContainer, { width: 200, height: 200 });
 
-    function genererQR() {
+    document.getElementById("btnGenerer").addEventListener("click", async () => {
       const nom = document.getElementById("nom").value;
       const categorie = document.getElementById("categorie").value;
       const nomTable = document.getElementById("nomTable").value;
@@ -58,18 +59,29 @@
         return;
       }
 
-      // Payload JSON sécurisé exclusif pour Marie & Japhète
-      const donnéesMariage = {
-        mariage: "MarieJaphete2026", 
-        nom: nom,
-        cat: categorie,
-        tNom: nomTable,
-        tNum: numTable
-      };
+      // Générer un ID unique basé sur le temps actuel
+      const inviteId = "INV-" + Date.now();
 
-      qr.clear();
-      qr.makeCode(JSON.stringify(donnéesMariage));
-    }
+      try {
+        // Enregistrement des données dans la collection "invites" de Firestore
+        await setDoc(doc(db, "invites", inviteId), {
+          nom: nom,
+          categorie: categorie,
+          nomTable: nomTable,
+          numTable: numTable,
+          statut: "Attente" // Pratique pour savoir s'il est déjà entré plus tard !
+        });
+
+        // Le QR Code ne contient PLUS que l'identifiant unique
+        qr.clear();
+        qr.makeCode(inviteId);
+        
+        alert("Invité enregistré avec succès dans Firebase !");
+      } catch (error) {
+        console.error("Erreur Firebase:", error);
+        alert("Erreur lors de l'enregistrement dans la base de données.");
+      }
+    });
   </script>
 </body>
 </html>
