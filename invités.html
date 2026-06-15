@@ -5,6 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Liste des Invités - Marie & Japhète</title>
   <link rel="stylesheet" href="style.css">
+  
+  <style>
+    /* Compteur d'invités premium */
+    .counter-badge {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-family: system-ui, -apple-system, sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: block;
+      font-weight: 500;
+    }
+    
+    /* Alignement spécifique pour la colonne d'index numérique */
+    .col-index {
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-variant-numeric: tabular-nums;
+      width: 40px;
+    }
+  </style>
 </head>
 <body>
 
@@ -23,14 +45,17 @@
       <div style="flex: 1;">
         <select id="selectCategorie">
           <option value="Tous">Toutes les catégories</option>
-          </select>
+        </select>
       </div>
     </div>
+
+    <span class="counter-badge" id="total-compteur">0 invité affiché</span>
 
     <div class="table-wrapper">
       <table class="premium-table">
         <thead>
           <tr>
+            <th style="width: 40px;">N°</th>
             <th>Nom Complet</th>
             <th>Catégorie</th>
             <th>Nom de Table</th>
@@ -39,7 +64,7 @@
         </thead>
         <tbody id="table-body">
           <tr>
-            <td colspan="4" style="text-align: center; color: var(--muted); font-style: italic; padding: 30px;">
+            <td colspan="5" style="text-align: center; color: var(--muted); font-style: italic; padding: 30px;">
               Chargement des invités depuis le serveur...
             </td>
           </tr>
@@ -79,14 +104,13 @@
 
       } catch (error) {
         console.error("Erreur d'accès Firebase : ", error);
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #9b2c2c; padding: 30px;">Impossible de charger la liste (Vérifiez votre connexion internet).</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #9b2c2c; padding: 30px;">Impossible de charger la liste (Vérifiez votre connexion internet).</td></tr>`;
       }
     }
 
     // Génère les options du select de manière unique et dynamique
     function genererMenuCategories(categoriesSet) {
       const select = document.getElementById("selectCategorie");
-      // On remet à zéro sauf l'option "Tous"
       select.innerHTML = '<option value="Tous">Toutes les catégories</option>';
       
       categoriesSet.forEach(cat => {
@@ -100,20 +124,32 @@
     // Effectue le rendu des lignes du tableau HTML
     function afficherDonnees(listeFiltree) {
       const tbody = document.getElementById("table-body");
+      const compteurElement = document.getElementById("total-compteur");
       tbody.innerHTML = "";
 
+      // Mise à jour du libellé du compteur global
       if (listeFiltree.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--muted); font-style: italic; padding: 30px;">Aucun invité ne correspond à vos critères.</td></tr>`;
+        compteurElement.innerText = "Aucun invité trouvé";
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--muted); font-style: italic; padding: 30px;">Aucun invité ne correspond à vos critères.</td></tr>`;
         return;
+      } else if (listeFiltree.length === 1) {
+        compteurElement.innerText = "1 invité répertorié";
+      } else {
+        compteurElement.innerText = `${listeFiltree.length} invités répertoriés`;
       }
 
-      listeFiltree.forEach(invite => {
+      // Construction des lignes du tableau avec indexation
+      listeFiltree.forEach((invite, index) => {
         const tr = document.createElement("tr");
 
         // Formatage pro du numéro de table (01, 02 au lieu de 1, 2)
         const numTableFormate = invite.numTable ? String(invite.numTable).padStart(2, '0') : '-';
+        
+        // Numérotation continue (1, 2, 3...)
+        const ligneIndex = index + 1;
 
         tr.innerHTML = `
+          <td class="col-index">${ligneIndex}</td>
           <td style="font-weight: 500;">${invite.nom || '-'}</td>
           <td><span class="category-pill">${invite.categorie || '-'}</span></td>
           <td style="color: var(--muted);">${invite.nomTable || '-'}</td>
