@@ -11,14 +11,13 @@
 
   <div class="container">
     <a href="index.html" class="btn-back">← Retour à l'accueil</a>
-    
     <h1>Lecteur de Contrôle d'Accès</h1>
 
     <div class="section">
       <div id="reader"></div>
 
       <div id="ticket-resultat" class="ticket">
-        <div class="ticket-title">Invitation Validée ✨</div>
+        <div class="ticket-title">Invitation Scannée 📥</div>
         <div class="guest-name" id="res-nom">-</div>
         <div class="guest-category" id="res-categorie">-</div>
         
@@ -32,35 +31,65 @@
             <strong id="res-numTable">-</strong>
           </div>
         </div>
+
+        <div id="firebase-status"></div>
       </div>
     </div>
   </div>
 
-  <script>
-    function onScanSuccess(decodedText, decodedResult) {
+  <script type="module">
+    import { db, doc, getDoc } from "./firebase-config.js";
+
+    async function onScanSuccess(decodedText, decodedResult) {
+      const statusContainer = document.getElementById("firebase-status");
+      statusContainer.innerHTML = ""; // On réinitialise le statut en ligne
+      
       try {
+        // Décodage instantané du JSON écrit dans le QR Code (Fonctionne OFFLINE)
         const data = JSON.parse(decodedText);
         
-        // Vérification de l'identifiant unique du mariage
         if(data.mariage === "MarieJaphete2026") {
-          
+          // Affichage immédiat des données sans attendre internet !
           document.getElementById("res-nom").innerText = data.nom;
           document.getElementById("res-categorie").innerText = data.cat;
           document.getElementById("res-nomTable").innerText = data.tNom;
           document.getElementById("res-numTable").innerText = data.tNum;
           
-          // On affiche le ticket stylisé bien organisé
           document.getElementById("ticket-resultat").style.display = "block";
-          
+
+          // --- VÉRIFICATION FIREBASE EN ARRIÈRE-PLAN (ONLINE ONLY) ---
+          if (navigator.onLine) {
+            statusContainer.innerHTML = "<span style='color: var(--muted); font-size:0.8rem;'>Vérification cloud...</span>";
+            
+            try {
+              const docRef = doc(db, "invites", data.id);
+              const docSnap = await getDoc(docRef);
+
+              if (docSnap.exists()) {
+                // L'invité est bien dans la collection cloud -> On lance l'animation stylisée !
+                statusContainer.innerHTML = "<div class='online-badge'>✨ Confirmé sur la liste officielle Cloud</div>";
+              } else {
+                statusContainer.innerHTML = "<span style='color: #c94c4c; font-weight:bold;'>⚠️ Absent de la liste Cloud !</span>";
+              }
+            } catch (firebaseError) {
+              // Si la requête échoue à cause du réseau instable
+              statusContainer.innerHTML = "<span style='color: var(--muted); font-style:italic;'>Mode local (Échec de synchronisation cloud)</span>";
+            }
+          } else {
+            // Pas d'internet du tout détecté par le navigateur
+            statusContainer.innerHTML = "<span style='color: var(--muted); font-style:italic;'>Offline - Données du QR validées</span>";
+          }
+
         } else {
-          alert("Attention : Ce QR code ne correspond pas au mariage de Marie & Japhète.");
+          alert("Ce QR code n'appartient pas au mariage de Marie & Japhète.");
         }
       } catch (e) {
-        alert("Code inconnu ou invalide.");
+        alert("QR Code invalide ou illisible.");
       }
     }
 
-    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 12, qrbox: 250 });
+    // Initialisation du Scanner caméra
+    let html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 15, qrbox: 250 });
     html5QrcodeScanner.render(onScanSuccess);
   </script>
 </body>
