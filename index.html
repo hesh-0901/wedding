@@ -239,7 +239,12 @@ function drawStyledQR(canvas, text, initiales) {
 function buildQRText(nom, cat, nomtable, numtable) {
   var payload = { c: cat, t: nomtable, n: numtable };
   var encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  return nom + '\n' + WEDDING_INFO + '\nWQR:' + encoded;
+  return JSON.stringify({
+  nom: nom,
+  cat: cat,
+  table: nomtable,
+  num: numtable
+});
 }
 
 /* ═══════════════════════════════════════════════════════
