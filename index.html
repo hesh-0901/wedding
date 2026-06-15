@@ -164,7 +164,7 @@ function drawStyledQR(canvas, text, initiales) {
   var S       = canvas.width;
   var n       = matrix.length;
   var tile    = S / n;
-  var modSize = 0.93;
+  var modSize = 0.82;
   var cornerR = 0.55;
 
   ctx.clearRect(0, 0, S, S);
@@ -198,14 +198,14 @@ function drawStyledQR(canvas, text, initiales) {
   drawFinder(ctx, 0,          (n-7)*tile, tile, cornerR);
 
   /* Initiales — grand cercle plein, sans contour */
-  var cr  = tile * 3.6;   /* plus grand qu'avant */
+  var cr = tile * 2.2;    /* plus grand qu'avant */
   var cx2 = S / 2;
   var cy2 = S / 2;
 
   /* Zone de nettoyage autour du cercle (efface les modules qui se cachent derrière) */
   ctx.fillStyle = LIGHT;
   ctx.beginPath();
-  ctx.arc(cx2, cy2, cr + tile * 0.7, 0, Math.PI*2);
+  ctx.arc(cx2, cy2, cr + tile * 0.25, 0, Math.PI*2);
   ctx.fill();
 
   /* Cercle plein — aucun contour */
@@ -262,7 +262,7 @@ function generer() {
 
   document.getElementById('qr-panel').innerHTML = `
     <div class="qr-outer-frame">
-      <canvas id="qr-canvas" width="240" height="240"></canvas>
+      <canvas id="qr-canvas" width="320" height="320"></canvas>
       <div class="qr-name-display">${nom}</div>
       <div class="qr-sub-display">Nom + infos mariage visibles à la caméra iOS</div>
     </div>
