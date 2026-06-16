@@ -8,14 +8,14 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
   <style>
-  /* Écran de verrouillage plein écran */
+    /* Écran de verrouillage plein écran Premium */
     .auth-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: var(--light, #f4f6f0); /* Fond crème clair */
+      background: var(--light, #f4f6f0);
       display: flex;
       justify-content: center;
       align-items: center;
@@ -93,7 +93,7 @@
       display: none;
     }
 
-    /* Masquer le conteneur principal tant qu'on n'est pas loggé */
+    /* Masquage et affichage fluide de l'application principale */
     .app-hidden {
       opacity: 0;
       pointer-events: none;
@@ -199,7 +199,21 @@
 </head>
 <body>
 
-  <div class="container">
+  <div id="authOverlay" class="auth-overlay">
+    <div class="auth-card">
+      <h2>Espace Sécurisé</h2>
+      <p>Veuillez entrer le code d'accès pour générer les invitations.</p>
+      
+      <div class="auth-field-wrapper">
+        <input type="password" id="authPassword" class="auth-input" placeholder="••••" maxlength="10">
+        <div id="authError" class="auth-error">Code d'accès incorrect.</div>
+      </div>
+      
+      <button id="btnAuthSubmit" class="btn-auth">Valider l'accès</button>
+    </div>
+  </div>
+
+  <div class="container app-hidden" id="mainContainer">
     <a href="index.html" class="btn-back" style="display: flex; align-items: center; gap: 6px;">
       <svg style="width:16px; height:16px; fill:none; stroke:var(--muted); stroke-width:2;" viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       Retour à l'accueil
@@ -268,41 +282,66 @@
 
     // --- VERIFICATION SECURISEE DU MOT DE PASSE FIRESTORE ---
     async function verifierAcces() {
-      try {
-        // Récupération de la référence du mot de passe stocké en base
-        const docRef = doc(db, "password", "pass");
-        const docSnap = await getDoc(docRef);
+      const overlay = document.getElementById("authOverlay");
+      const container = document.getElementById("mainContainer");
+      const input = document.getElementById("authPassword");
+      const errorMsg = document.getElementById("authError");
+      const btnSubmit = document.getElementById("btnAuthSubmit");
 
-        if (docSnap.exists()) {
-          const motDePasseCorrect = docSnap.data().password;
-          let saisieUser = prompt("Veuillez saisir le code d'accès pour gérer les invitations :");
+      input.focus();
 
-          if (saisieUser === motDePasseCorrect) {
-            // Si le code est bon, on affiche la page
-            document.body.style.display = "block";
+      async function validerCode() {
+        const codeSaisi = input.value.trim();
+        if (!codeSaisi) return;
+
+        try {
+          const docRef = doc(db, "password", "pass");
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const motDePasseCorrect = docSnap.data().password;
+
+            if (codeSaisi === motDePasseCorrect) {
+              overlay.style.opacity = "0";
+              overlay.style.visibility = "hidden";
+              
+              container.classList.remove("app-hidden");
+              container.classList.add("app-visible");
+              
+              setTimeout(() => document.getElementById("nom").focus(), 400);
+            } else {
+              errorMsg.style.display = "block";
+              input.value = "";
+              input.focus();
+            }
           } else {
-            alert("Code d'accès incorrect ! Redirection...");
-            window.location.href = "index.html";
+            alert("Erreur Firebase : Document introuvable.");
           }
-        } else {
-          alert("Erreur de configuration : Clé d'accès introuvable sur Firebase.");
-          window.location.href = "index.html";
+        } catch (error) {
+          console.error("Erreur d'authentification : ", error);
+          alert("Erreur lors de la connexion à la base de données.");
         }
-      } catch (error) {
-        console.error("Erreur d'authentification : ", error);
-        alert("Une erreur est survenue lors de la vérification de sécurité.");
-        window.location.href = "index.html";
       }
+
+      btnSubmit.addEventListener("click", validerCode);
+
+      input.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") validerCode();
+      });
+
+      input.addEventListener("input", () => {
+        errorMsg.style.display = "none";
+      });
     }
 
-    // Exécuter le verrou de sécurité immédiatement au chargement
+    // Exécuter immédiatement le verrouillage de sécurité
     verifierAcces();
 
-    // --- CONFIGURATION DU POSITIONNEMENT DU QR CODE SUR TON DESIGN ---
+    // --- CONFIGURATION GÉOMÉTRIQUE DU QR CODE (CALCULS VALIDÉS) ---
     const REGLAGES_IMAGE = {
-      tailleQR: 130,   
-      positionX: 325,  
-      positionY: 666   
+      tailleQR: 130,   // S'intègre sans déborder dans le carré
+      positionX: 340,  // Centrage latéral chirurgical
+      positionY: 670   // Alignement vertical parfait sous le texte 19H00
     };
     
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
