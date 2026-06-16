@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Générateur d'Invitations - Marie & Japhète</title>
   <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
   <style>
@@ -337,11 +338,16 @@
     // Exécuter immédiatement le verrouillage de sécurité
     verifierAcces();
 
-    // --- CONFIGURATION GÉOMÉTRIQUE DU QR CODE (CALCULS VALIDÉS) ---
+    // --- CONFIGURATION GÉOMÉTRIQUE DU QR CODE ET TEXTE ---
     const REGLAGES_IMAGE = {
       tailleQR: 130,   // S'intègre sans déborder dans le carré
-      positionX: 326,  // Centrage latéral chirurgical
-      positionY: 665   // Alignement vertical parfait sous le texte 19H00
+      positionX: 326,  // Centrage latéral chirurgical du QR Code
+      positionY: 665,  // Alignement vertical du QR Code
+      
+      // Réglages typographiques pour le nom de l'invité
+      couleurTexte: "#41443c",
+      taillePolice: "24px",     // Ajuste en pixels pour remplir harmonieusement la forme
+      axeYTexteDepuisLeBas: 22  // Position verticale précise dans la forme arrondie blanche du bas
     };
     
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
@@ -379,14 +385,17 @@
       qr.clear();
       qr.makeCode(JSON.stringify(donnéesComplètes));
 
-      setTimeout(() => {
-        const imgQR = qrcodeHiddenContainer.querySelector("img");
-        if (imgQR && imgQR.src) {
-          dessinerInvitationComplete(imgQR.src);
-        } else {
-          alert("Erreur lors de la préparation géométrique du QR code.");
-        }
-      }, 250);
+      // Attente du rendu asynchrone de la police et du QR
+      document.fonts.load(`bold ${REGLAGES_IMAGE.taillePolice} 'Cinzel'`).then(() => {
+        setTimeout(() => {
+          const imgQR = qrcodeHiddenContainer.querySelector("img");
+          if (imgQR && imgQR.src) {
+            dessinerInvitationComplete(imgQR.src, nom);
+          } else {
+            alert("Erreur lors de la préparation géométrique du QR code.");
+          }
+        }, 250);
+      });
 
       document.getElementById("btnGenerer").disabled = true;
       document.getElementById("btnGenerer").style.opacity = "0.5";
@@ -404,7 +413,7 @@
       }
     });
 
-    function dessinerInvitationComplete(qrCodeBase64) {
+    function dessinerInvitationComplete(qrCodeBase64, nomInvite) {
       const fondDesign = new Image();
       fondDesign.src = "design-invitation.png";
 
@@ -413,6 +422,7 @@
         canvas.height = fondDesign.height;
         ctx.drawImage(fondDesign, 0, 0);
 
+        // 1. Dessin du QR Code
         const imageQR = new Image();
         imageQR.src = qrCodeBase64;
 
@@ -424,6 +434,18 @@
             REGLAGES_IMAGE.tailleQR, 
             REGLAGES_IMAGE.tailleQR
           );
+          
+          // 2. Dessin du nom de l'invité centré dans la forme arrondie inférieure
+          ctx.fillStyle = REGLAGES_IMAGE.couleurTexte;
+          ctx.font = `bold ${REGLAGES_IMAGE.taillePolice} 'Cinzel', serif`;
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle"; // Permet un centrage vertical parfait dans le bloc
+
+          const milieuHorizontal = canvas.width / 2;
+          const positionVerticaleForme = canvas.height - REGLAGES_IMAGE.axeYTexteDepuisLeBas;
+
+          ctx.fillText(nomInvite, milieuHorizontal, positionVerticaleForme);
+
           document.getElementById("qr-wrapper").style.display = "flex";
         };
       };
@@ -435,20 +457,19 @@
       };
     }
 
-        window.telechargerInvitation = function() {
-        const nomInvite = document.getElementById("nom").value.trim() || "invite";
-        const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
-        
-        // Force l'exportation en PNG avec le niveau de qualité maximal (1.0)
-        const imageFinaleUrl = canvas.toDataURL("image/png", 1.0);
-        
-        const lien = document.createElement("a");
-        lien.href = imageFinaleUrl;
-        lien.download = nomFichier;
-        document.body.appendChild(lien);
-        lien.click();
-        document.body.removeChild(lien);
-      }
+    window.telechargerInvitation = function() {
+      const nomInvite = document.getElementById("nom").value.trim() || "invite";
+      const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
+      
+      const imageFinaleUrl = canvas.toDataURL("image/png", 1.0);
+      
+      const lien = document.createElement("a");
+      lien.href = imageFinaleUrl;
+      lien.download = nomFichier;
+      document.body.appendChild(lien);
+      lien.click();
+      document.body.removeChild(lien);
+    }
 
     window.creerSuivant = function() {
       document.getElementById("formInvite").reset();
