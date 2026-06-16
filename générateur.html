@@ -153,10 +153,11 @@
 
     let qrcodeContainer = document.getElementById("qrcode");
     let qr = new QRCode(qrcodeContainer, { 
-      width: 250, 
-      height: 250,
-      correctLevel : QRCode.CorrectLevel.H
-    });
+    width: 250, 
+    height: 250,
+    // Remplacer .H par .Q ou .M pour libérer de la place tout en restant sécurisé
+    correctLevel : QRCode.CorrectLevel.M 
+  });
 
     document.getElementById("btnGenerer").addEventListener("click", async () => {
       const nom = document.getElementById("nom").value.trim();
