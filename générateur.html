@@ -8,6 +8,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   
   <style>
+    /* Masquer toute l'interface par défaut pour la sécurité */
+    body {
+      display: none;
+    }
+
     /* Zone de résultat de l'invitation fusionnée */
     .qr-result-container {
       display: none;
@@ -168,20 +173,51 @@
   </div>
 
   <script type="module">
-    import { db, doc, setDoc } from "./firebase-config.js";
+    import { db, doc, setDoc, getDoc } from "./firebase-config.js";
 
-// --- CONFIGURATION DU POSITIONNEMENT DU QR CODE SUR TON DESIGN ---
+    // --- VERIFICATION SECURISEE DU MOT DE PASSE FIRESTORE ---
+    async function verifierAcces() {
+      try {
+        // Récupération de la référence du mot de passe stocké en base
+        const docRef = doc(db, "password", "pass");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const motDePasseCorrect = docSnap.data().password;
+          let saisieUser = prompt("Veuillez saisir le code d'accès pour gérer les invitations :");
+
+          if (saisieUser === motDePasseCorrect) {
+            // Si le code est bon, on affiche la page
+            document.body.style.display = "block";
+          } else {
+            alert("Code d'accès incorrect ! Redirection...");
+            window.location.href = "index.html";
+          }
+        } else {
+          alert("Erreur de configuration : Clé d'accès introuvable sur Firebase.");
+          window.location.href = "index.html";
+        }
+      } catch (error) {
+        console.error("Erreur d'authentification : ", error);
+        alert("Une erreur est survenue lors de la vérification de sécurité.");
+        window.location.href = "index.html";
+      }
+    }
+
+    // Exécuter le verrou de sécurité immédiatement au chargement
+    verifierAcces();
+
+    // --- CONFIGURATION DU POSITIONNEMENT DU QR CODE SUR TON DESIGN ---
     const REGLAGES_IMAGE = {
-      tailleQR: 130,   // La taille est parfaite, on la garde !
-      positionX: 325,  // Ajusté à 340 pour un centrage latéral chirurgical
-      positionY: 666   // Remonté à 670 pour être parfaitement encadré en hauteur
+      tailleQR: 130,   
+      positionX: 325,  
+      positionY: 666   
     };
     
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
     let canvas = document.getElementById("invitationCanvas");
     let ctx = canvas.getContext("2d");
 
-    // Initialisation du moteur QR en mode Medium pour éviter l'overflow
     let qr = new QRCode(qrcodeHiddenContainer, { 
       width: REGLAGES_IMAGE.tailleQR, 
       height: REGLAGES_IMAGE.tailleQR,
@@ -210,11 +246,9 @@
         tNum: numTable
       };
 
-      // 1. Génération du QR code dans le conteneur masqué
       qr.clear();
       qr.makeCode(JSON.stringify(donnéesComplètes));
 
-      // 2. Temporisation pour laisser l'image du QR code se générer avant la fusion sur le canvas
       setTimeout(() => {
         const imgQR = qrcodeHiddenContainer.querySelector("img");
         if (imgQR && imgQR.src) {
@@ -224,11 +258,9 @@
         }
       }, 250);
 
-      // Désactiver le bouton principal pour éviter le spam d'écritures Firebase
       document.getElementById("btnGenerer").disabled = true;
       document.getElementById("btnGenerer").style.opacity = "0.5";
 
-      // 3. Envoi cloud furtif
       try {
         await setDoc(doc(db, "invites", inviteId), {
           nom: nom,
@@ -242,20 +274,15 @@
       }
     });
 
-    // Algorithme de chargement, calcul d'échelle et superposition
     function dessinerInvitationComplete(qrCodeBase64) {
       const fondDesign = new Image();
-      fondDesign.src = "design-invitation.png"; // Recherche ton fichier dans la racine
+      fondDesign.src = "design-invitation.png";
 
       fondDesign.onload = function() {
-        // Le canvas s'adapte à la taille de ton fichier graphique original
         canvas.width = fondDesign.width;
         canvas.height = fondDesign.height;
-
-        // Dessiner le fond (design d'invitation)
         ctx.drawImage(fondDesign, 0, 0);
 
-        // Intégrer le QR code par-dessus
         const imageQR = new Image();
         imageQR.src = qrCodeBase64;
 
@@ -267,26 +294,20 @@
             REGLAGES_IMAGE.tailleQR, 
             REGLAGES_IMAGE.tailleQR
           );
-
-          // Afficher la section d'aperçu final et d'actions
           document.getElementById("qr-wrapper").style.display = "flex";
         };
       };
 
       fondDesign.onerror = function() {
-        alert("Erreur : Le fichier 'design-invitation.png' est introuvable. Place ton image dans le dossier de l'application.");
-        // Réactivation du bouton en cas d'erreur de chargement
+        alert("Erreur : Le fichier 'design-invitation.png' est introuvable.");
         document.getElementById("btnGenerer").disabled = false;
         document.getElementById("btnGenerer").style.opacity = "1";
       };
     }
 
-    // Télécharger l'image globale (Design + QR combinés)
     window.telechargerInvitation = function() {
       const nomInvite = document.getElementById("nom").value.trim() || "invite";
       const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
-      
-      // Extraction de la surface complète du canvas fusionné au format PNG
       const imageFinaleUrl = canvas.toDataURL("image/png");
       
       const lien = document.createElement("a");
@@ -297,12 +318,9 @@
       document.body.removeChild(lien);
     }
 
-    // Fonction Réinitialisation (Créer le suivant)
     window.creerSuivant = function() {
       document.getElementById("formInvite").reset();
       document.getElementById("qr-wrapper").style.display = "none";
-      
-      // Vider proprement la mémoire graphique du canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       qr.clear();
 
