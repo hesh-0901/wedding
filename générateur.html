@@ -172,10 +172,11 @@
 
 // --- CONFIGURATION DU POSITIONNEMENT DU QR CODE SUR TON DESIGN ---
     const REGLAGES_IMAGE = {
-      tailleQR: 130,   // Réduit légèrement pour laisser une jolie marge blanche tout autour
-      positionX: 345,  // Ajusté à 345 pour compenser la réduction de taille et rester centré
-      positionY: 685   // Augmenté de 30 pixels pour descendre pile au milieu du cadre
+      tailleQR: 130,   // La taille est parfaite, on la garde !
+      positionX: 340,  // Ajusté à 340 pour un centrage latéral chirurgical
+      positionY: 670   // Remonté à 670 pour être parfaitement encadré en hauteur
     };
+    
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
     let canvas = document.getElementById("invitationCanvas");
     let ctx = canvas.getContext("2d");
