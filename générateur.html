@@ -170,13 +170,12 @@
   <script type="module">
     import { db, doc, setDoc } from "./firebase-config.js";
 
-          // --- CONFIGURATION DU POSITIONNEMENT DU QR CODE SUR TON DESIGN ---
-        // Ajustements basés sur l'emplacement du cadre prévu dans ton fichier image
-        const REGLAGES_IMAGE = {
-          tailleQR: 140,   // Réduit de 180 à 140 pour bien entrer dans le carré blanc/clair
-          positionX: 415,  // Augmenté pour décaler le QR code vers la droite
-          positionY: 605   // Augmenté pour descendre le QR code dans le cadre vide
-        };
+// --- CONFIGURATION DU POSITIONNEMENT DU QR CODE SUR TON DESIGN ---
+    const REGLAGES_IMAGE = {
+      tailleQR: 140,   // On garde cette taille qui est parfaite
+      positionX: 340,  // Diminué (de 415 à 340) pour décaler le QR code vers la gauche
+      positionY: 635   // Augmenté (de 605 à 635) pour faire descendre le QR code dans la case
+    };
 
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
     let canvas = document.getElementById("invitationCanvas");
