@@ -435,18 +435,20 @@
       };
     }
 
-    window.telechargerInvitation = function() {
-      const nomInvite = document.getElementById("nom").value.trim() || "invite";
-      const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
-      const imageFinaleUrl = canvas.toDataURL("image/png");
-      
-      const lien = document.createElement("a");
-      lien.href = imageFinaleUrl;
-      lien.download = nomFichier;
-      document.body.appendChild(lien);
-      lien.click();
-      document.body.removeChild(lien);
-    }
+        window.telechargerInvitation = function() {
+        const nomInvite = document.getElementById("nom").value.trim() || "invite";
+        const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
+        
+        // Force l'exportation en PNG avec le niveau de qualité maximal (1.0)
+        const imageFinaleUrl = canvas.toDataURL("image/png", 1.0);
+        
+        const lien = document.createElement("a");
+        lien.href = imageFinaleUrl;
+        lien.download = nomFichier;
+        document.body.appendChild(lien);
+        lien.click();
+        document.body.removeChild(lien);
+      }
 
     window.creerSuivant = function() {
       document.getElementById("formInvite").reset();
