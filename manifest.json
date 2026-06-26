@@ -1,0 +1,22 @@
+{
+  "name": "Générateur d'Invitations Marie & Japhète",
+  "short_name": "InvitationsMJ",
+  "description": "Application premium de génération d'invitations avec QR Code pour le mariage de Marie & Japhète.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f4f6f0",
+  "theme_color": "#2b2d27",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
