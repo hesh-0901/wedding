@@ -1,4 +1,4 @@
-const CACHE_NAME = "mariage-invites-v1";
+const CACHE_NAME = "mariage-invites-v2";
 const ASSETS_TO_CACHE = [
   "./",
   "./index.html", // Change par le nom exact de ton fichier HTML si différent (ex: generer.html)
