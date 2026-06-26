@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mariage de Marie & Japhète</title>
-  <link rel="stylesheet" href="style.css"> <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2b2d27">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,6 +25,8 @@
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 12px rgba(65, 68, 60, 0.02);
       cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
     }
     .btn-large:hover {
       border-color: var(--gold); background: var(--light); transform: translateY(-2px);
@@ -38,14 +41,14 @@
     .icon-bootstrap { width: 24px; height: 24px; fill: none; stroke: var(--dark); stroke-width: 1.5; flex-shrink: 0; transition: stroke 0.3s; }
     .btn-large:hover .icon-bootstrap { stroke: var(--gold); }
 
-    /* Style spécifique pour le bouton d'installation PWA (masqué par défaut) */
+    /* Forcé en flex pour l'aperçu immédiat avant l'ajout des icônes PNG */
     .btn-install-pwa {
-      display: none;
+      display: flex;
       border: 1px dashed var(--gold);
       background: #fcfdfe;
     }
     .btn-install-pwa:hover {
-      background: var(--cream, #f9fbf7);
+      background: #f9fbf7;
     }
   </style>
 </head>
@@ -128,35 +131,37 @@
     let differePrompt;
     const btnInstall = document.getElementById("pwaInstallBtn");
 
+    // Masque immédiatement le bouton si l'application s'exécute déjà en mode autonome autonome (PWA déjà lancée)
+    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+      btnInstall.style.display = "none";
+    }
+
     window.addEventListener("beforeinstallprompt", (e) => {
-      // Empêche le navigateur d'afficher son prompt natif intrusif immédiatement
       e.preventDefault();
-      // Stocke l'événement pour l'utiliser plus tard
       differePrompt = e;
-      // Rend notre bouton d'installation visible de manière fluide
+      // S'assure de l'afficher si le navigateur valide l'installation
       btnInstall.style.display = "flex";
     });
 
     btnInstall.addEventListener("click", async () => {
-      if (!differePrompt) return;
+      // Si le prompt natif n'est pas encore prêt (absence d'images), on met un message d'attente amical
+      if (!differePrompt) {
+        alert("Préparation de l'application... L'installation sera entièrement disponible dès que les fichiers d'icônes 'icon-192.png' et 'icon-512.png' seront ajoutés à la racine de votre projet.");
+        return;
+      }
       
-      // Affiche la boîte de dialogue d'installation de l'appareil
       differePrompt.prompt();
-      
-      // Attend la réponse de l'utilisateur
       const { outcome } = await differePrompt.userChoice;
-      console.log(`Choix d'installation de l'utilisateur : ${outcome}`);
+      console.log(`Choix d'installation : ${outcome}`);
       
-      // On réinitialise la variable, le prompt ne pouvant servir qu'une fois
       differePrompt = null;
-      // Masque le bouton si installé
       btnInstall.style.display = "none";
     });
 
-    // Masquer aussi le bouton si l'application est déjà lancée en mode autonome (déjà installée)
     window.addEventListener("appinstalled", () => {
       btnInstall.style.display = "none";
       differePrompt = null;
+      alert("Application installée avec succès ! Retrouvez-la sur votre écran d'accueil ou votre bureau.");
     });
   </script>
 
