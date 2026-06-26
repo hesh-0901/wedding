@@ -174,10 +174,10 @@
     <h1 id="page-title">Contrôle d'Accès Privé</h1>
 
     <div id="scanner-screen" class="section scanner-wrapper">
-      <div id="reader"></div>
+      <div id="reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
     </div>
 
-    <div id="guest-screen" class="guest-profile-screen">
+    <div id="guest-screen" class="guest-profile-screen" style="display: none;">
       <div class="premium-card">
         
         <div class="icon-container">
@@ -220,49 +220,65 @@
 
   </div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+
   <script type="module">
     import { db, doc, getDoc } from "./firebase-config.js";
 
-    let html5QrcodeScanner;
+    let html5Qrcode;
+    let scannerEnPause = false;
     
-    // Initialisation globale du Scanner
+    // Initialisation permanente et fluide de la caméra
     function initialiserScanner() {
-      html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+      // Utilisation directe de Html5Qrcode pour éviter l'interface lourde d'Html5QrcodeScanner
+      html5Qrcode = new Html5Qrcode("reader");
+      
+      const config = { 
         fps: 15, 
         qrbox: 260,
-        aspectRatio: 1.0
+        aspectRatio: 1.0 
+      };
+
+      // Demande l'autorisation de la caméra UNE fois pour toutes au chargement de la page
+      html5Qrcode.start(
+        { facingMode: "environment" }, // Caméra arrière par défaut
+        config,
+        onScanSuccess
+      ).catch(err => {
+        console.error("Impossible d'accéder à la caméra : ", err);
+        alert("Veuillez autoriser l'accès à la caméra pour scanner les QR codes.");
       });
-      html5QrcodeScanner.render(onScanSuccess);
     }
 
     async function onScanSuccess(decodedText, decodedResult) {
+      // Si le scanner est déjà en pause, on ignore les détections multiples
+      if (scannerEnPause) return;
+
       try {
         const data = JSON.parse(decodedText);
         
         if(data.mariage === "MarieJaphete2026") {
           
-          // 1. ARRÊT IMMÉDIAT DE LA CAMÉRA (UX fluide)
-          if (html5QrcodeScanner) {
-            await html5QrcodeScanner.clear();
-          }
+          // 1. MISE EN PAUSE IMMÉDIATE DE LA VIDÉO (Bloque le flux sans couper l'autorisation caméra)
+          scannerEnPause = true;
+          html5Qrcode.pause(true); // Conserve le flux vidéo figé en arrière-plan
 
           // 2. INJECTION DES DONNÉES DANS L'INTERFACE
           document.getElementById("res-nom").innerText = data.nom;
           document.getElementById("res-categorie").innerText = data.cat;
           document.getElementById("res-nomTable").innerText = data.tNom;
-          document.getElementById("res-numTable").innerText = data.tNum.padStart(2, '0'); // Ajoute un 0 si chiffre unique (ex: 05)
+          document.getElementById("res-numTable").innerText = data.tNum.padStart(2, '0');
 
-          // 3. SWITCH D'INTERFACE (Bascule d'écrans)
+          // 3. SWITCH D'INTERFACE
           document.getElementById("page-title").innerText = "Invitation Validée";
           document.getElementById("scanner-screen").style.display = "none";
           document.getElementById("guest-screen").style.display = "block";
 
-          // 4. PROTOCOLE DE VÉRIFICATION FIREBASE (CLOUD CLANDESTIN OUVALIDE)
+          // 4. VÉRIFICATION SERVEUR FIREBASE
           const badge = document.getElementById("cloud-status-badge");
           const label = document.getElementById("cloud-status-text");
 
           if (navigator.onLine) {
-            // Statut d'attente pro
             badge.className = "status-badge status-syncing";
             label.innerText = "Synchronisation cloud...";
 
@@ -271,21 +287,17 @@
               const docSnap = await getDoc(docRef);
 
               if (docSnap.exists()) {
-                // Succès : Présence validée sur la collection Firebase
                 badge.className = "status-badge status-verified";
                 label.innerText = "Liste officielle validée";
               } else {
-                // Erreur : Absent de Firestore
                 badge.className = "status-badge status-error";
                 label.innerText = "Non répertorié sur le serveur";
               }
             } catch (error) {
-              // Problème de timeout ou micro-coupure réseau
               badge.className = "status-badge status-syncing";
               label.innerText = "Données sécurisées hors-ligne";
             }
           } else {
-            // Mode strictement offline
             badge.className = "status-badge status-syncing";
             label.innerText = "Vérification locale (Hors-ligne)";
           }
@@ -298,22 +310,37 @@
       }
     }
 
-    // Rendre la fonction de réinitialisation disponible pour le bouton "Suivant"
+    // Fonction ultra-rapide déclenchée par le bouton "Suivant"
     window.reprendreScan = function() {
       document.getElementById("page-title").innerText = "Contrôle d'Accès Privé";
       document.getElementById("guest-screen").style.display = "none";
       document.getElementById("scanner-screen").style.display = "block";
-      initialiserScanner(); // Relance proprement la caméra
+      
+      // Relance instantanée de l'analyse vidéo sans réinitialiser la caméra
+      if (html5Qrcode) {
+        html5Qrcode.resume();
+        scannerEnPause = false;
+      }
     }
 
-    // Premier démarrage au chargement de la page
-    initialiserScanner();
-    // --- ENREGISTREMENT DE LA PWA (SERVICE WORKER) ---
+    // Premier démarrage unique au chargement
+    window.addEventListener("DOMContentLoaded", () => {
+      initialiserScanner();
+    });
+
+    // Évite de laisser la caméra allumée si l'utilisateur quitte la page ou revient à l'accueil
+    window.addEventListener("beforeunload", () => {
+      if (html5Qrcode) {
+        html5Qrcode.stop().catch(err => console.log(err));
+      }
+    });
+
+    // --- ENREGISTREMENT DE LA PWA ---
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js")
-          .then((reg) => console.log("PWA Service Worker enregistré avec succès !", reg.scope))
-          .catch((err) => console.error("Échec de l'enregistrement du Service Worker :", err));
+          .then((reg) => console.log("PWA Active :", reg.scope))
+          .catch((err) => console.error("Échec PWA :", err));
       });
     }
   </script>
