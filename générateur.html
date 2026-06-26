@@ -278,8 +278,7 @@
 
     </div>
   </div>
-
-  <script type="module">
+    <script type="module">
     import { db, doc, setDoc, getDoc } from "./firebase-config.js";
 
     // --- VERIFICATION SECURISEE DU MOT DE PASSE FIRESTORE ---
@@ -347,11 +346,11 @@
       
       // Réglages typographiques pour le haut de la carte
       couleurTexte: "#41443c",
-      taillePolice: "20px",      // Augmente cette valeur (ex: "20px") si c'est trop petit
+      taillePolice: "20px",      
       axeXCentre: 787 / 2,     // Centrage horizontal parfait (milieu de 787px)
       axeYTop: 165,            // Distance de 165px depuis le haut
       largeurMax: 450,         // Limite de coupure et retrait à 450px
-      hauteurLigne: 18         // Espace vertical si retour à la ligne
+      hauteurLigne: 26         // Augmenté à 26 pour accueillir confortablement le 20px Bold
     };
     
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
@@ -390,7 +389,7 @@
       qr.makeCode(JSON.stringify(donnéesComplètes));
 
       // Synchronisation avec Google Fonts avant le dessin
-      document.fonts.load(`600 ${REGLAGES_IMAGE.taillePolice} 'Cinzel'`).then(() => {
+      document.fonts.load(`bold ${REGLAGES_IMAGE.taillePolice} 'Cinzel'`).then(() => {
         setTimeout(() => {
           const imgQR = qrcodeHiddenContainer.querySelector("img");
           if (imgQR && imgQR.src) {
@@ -439,9 +438,9 @@
             REGLAGES_IMAGE.tailleQR
           );
           
-          // 2. Configuration du style du texte
+          // 2. Configuration du style du texte (Passage en bold)
           ctx.fillStyle = REGLAGES_IMAGE.couleurTexte;
-          ctx.font = `600 ${REGLAGES_IMAGE.taillePolice} 'Cinzel', serif`;
+          ctx.font = `bold ${REGLAGES_IMAGE.taillePolice} 'Cinzel', serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "top";
 
@@ -470,10 +469,10 @@
             }
           }
 
-          // Exécution de l'écriture
+          // Exécution de l'écriture (Forçage des majuscules avec .toUpperCase())
           dessinerTexteAjuste(
             ctx, 
-            nomInvite, 
+            nomInvite.toUpperCase(), 
             REGLAGES_IMAGE.axeXCentre, 
             REGLAGES_IMAGE.axeYTop, 
             REGLAGES_IMAGE.largeurMax, 
@@ -518,5 +517,6 @@
       document.getElementById("nom").focus();
     }
   </script>
-</body>
+  
+ </body>
 </html>
