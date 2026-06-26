@@ -4,8 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mariage de Marie & Japhète</title>
-  <link rel="stylesheet" href="style.css
-  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css"> <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2b2d27">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -24,6 +23,7 @@
       padding: 24px 28px; font-size: 1.2rem; border-radius: 12px;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       box-shadow: 0 4px 12px rgba(65, 68, 60, 0.02);
+      cursor: pointer;
     }
     .btn-large:hover {
       border-color: var(--gold); background: var(--light); transform: translateY(-2px);
@@ -37,6 +37,16 @@
     }
     .icon-bootstrap { width: 24px; height: 24px; fill: none; stroke: var(--dark); stroke-width: 1.5; flex-shrink: 0; transition: stroke 0.3s; }
     .btn-large:hover .icon-bootstrap { stroke: var(--gold); }
+
+    /* Style spécifique pour le bouton d'installation PWA (masqué par défaut) */
+    .btn-install-pwa {
+      display: none;
+      border: 1px dashed var(--gold);
+      background: #fcfdfe;
+    }
+    .btn-install-pwa:hover {
+      background: var(--cream, #f9fbf7);
+    }
   </style>
 </head>
 <body>
@@ -54,6 +64,16 @@
     </div>
 
     <div class="nav-container">
+      
+      <button id="pwaInstallBtn" class="btn-large btn-install-pwa">
+        <svg class="icon-bootstrap" viewBox="0 0 24 24" style="stroke: var(--gold);">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        <div class="btn-large-text">
+          <span class="btn-large-title" style="color: var(--dark);">Télécharger l'Application</span>
+          <span class="btn-large-subtitle">Installer sur cet appareil pour un accès direct</span>
+        </div>
+      </button>
       
       <a href="générateur.html" class="btn-large">
         <svg class="icon-bootstrap" viewBox="0 0 24 24">
@@ -93,6 +113,52 @@
 
     </div>
   </div>
+
+  <script>
+    // 1. Enregistrement classique du Service Worker PWA
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then((reg) => console.log("PWA Active :", reg.scope))
+          .catch((err) => console.error("Erreur PWA :", err));
+      });
+    }
+
+    // 2. Logique d'interception du bouton d'installation
+    let differePrompt;
+    const btnInstall = document.getElementById("pwaInstallBtn");
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      // Empêche le navigateur d'afficher son prompt natif intrusif immédiatement
+      e.preventDefault();
+      // Stocke l'événement pour l'utiliser plus tard
+      differePrompt = e;
+      // Rend notre bouton d'installation visible de manière fluide
+      btnInstall.style.display = "flex";
+    });
+
+    btnInstall.addEventListener("click", async () => {
+      if (!differePrompt) return;
+      
+      // Affiche la boîte de dialogue d'installation de l'appareil
+      differePrompt.prompt();
+      
+      // Attend la réponse de l'utilisateur
+      const { outcome } = await differePrompt.userChoice;
+      console.log(`Choix d'installation de l'utilisateur : ${outcome}`);
+      
+      // On réinitialise la variable, le prompt ne pouvant servir qu'une fois
+      differePrompt = null;
+      // Masque le bouton si installé
+      btnInstall.style.display = "none";
+    });
+
+    // Masquer aussi le bouton si l'application est déjà lancée en mode autonome (déjà installée)
+    window.addEventListener("appinstalled", () => {
+      btnInstall.style.display = "none";
+      differePrompt = null;
+    });
+  </script>
 
 </body>
 </html>
