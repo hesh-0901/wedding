@@ -414,19 +414,24 @@
       }
     });
     
+// ... (ici il y a le code pour QRCode et l'événement "btnGenerer") ...
+    
+    // ==========================================
+    // REMPLACE TOUTE CETTE FONCTION PAR CELLE-CI :
+    // ==========================================
     function dessinerInvitationComplete(qrCodeBase64, nomInvite) {
       const fondDesign = new Image();
       fondDesign.src = "design-invitation.png";
-    
+
       fondDesign.onload = function() {
         canvas.width = fondDesign.width;
         canvas.height = fondDesign.height;
         ctx.drawImage(fondDesign, 0, 0);
-    
-        // Dessin unique du QR Code
+
+        // 1. Dessin du QR Code
         const imageQR = new Image();
         imageQR.src = qrCodeBase64;
-    
+
         imageQR.onload = function() {
           ctx.drawImage(
             imageQR, 
@@ -436,12 +441,60 @@
             REGLAGES_IMAGE.tailleQR
           );
           
-          // Le bloc d'écriture du texte a été retiré d'ici pour laisser la forme vide
-    
+          // 2. Configuration du style du texte (Nom de l'invité)
+          ctx.fillStyle = "#41443c";
+          ctx.font = "600 4px 'Cinzel', serif"; // Écrit en 4px et police Cinzel
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+
+          const axeXCentre = 787 / 2; // Centré au milieu de la largeur de 787px
+          const axeYTop = 165;       // À 165px du haut vers le bas
+          const largeurMax = 450;    // Ne doit pas dépasser 450px
+          const hauteurLigne = 18;   // Espace entre deux lignes si le texte est coupé (Ajustable)
+
+          // 3. Fonction intelligente de retour à la ligne automatique et centrage
+          function dessinerTexteAjuste(contexte, texte, x, y, maxLargeur, hauteurLigne) {
+            let mots = texte.split(' ');
+            let ligne = '';
+            let lignes = [];
+
+            // Découpage du texte en plusieurs lignes si nécessaire
+            for (let n = 0; n < mots.length; n++) {
+              let ligneTest = ligne + mots[n] + ' ';
+              let metriques = contexte.measureText(ligneTest);
+              let largeurTest = metriques.width;
+              
+              if (largeurTest > maxLargeur && n > 0) {
+                lignes.push(ligne);
+                ligne = mots[n] + ' ';
+              } else {
+                ligne = ligneTest;
+              }
+            }
+            lignes.push(ligne);
+
+            // Dessin de chaque ligne centrée sur l'axe X
+            for (let i = 0; i < lignes.length; i++) {
+              contexte.fillText(lignes[i].trim(), x, y + (i * hauteurLigne));
+            }
+          }
+
+          // Exécution de l'écriture sur le canvas
+          dessinerTexteAjuste(ctx, nomInvite, axeXCentre, axeYTop, largeurMax, hauteurLigne);
+
           document.getElementById("qr-wrapper").style.display = "flex";
         };
       };
-    
+
+      fondDesign.onerror = function() {
+        alert("Erreur : Le fichier 'design-invitation.png' est introuvable.");
+        document.getElementById("btnGenerer").disabled = false;
+        document.getElementById("btnGenerer").style.opacity = "1";
+      };
+    }
+    // ==========================================
+
+    // ... (en dessous se trouvent les fonctions window.telechargerInvitation et window.creerSuivant) ...
       fondDesign.onerror = function() {
         alert("Erreur : Le fichier 'design-invitation.png' est introuvable.");
         document.getElementById("btnGenerer").disabled = false;
