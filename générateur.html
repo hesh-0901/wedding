@@ -235,8 +235,8 @@
             <option value="Parents">Parents</option>
             <option value="Connaissances">Connaissances</option>
             <option value="Parains">Parains</option>
-            <option value="Collegues">Collegues</option>
-            <option value="Eglise">Eglise</option>
+            <option value="Collègues">Collègues</option>
+            <option value="Église">Église</option>
           </select>
         </div>
         <div class="form-group">
@@ -339,16 +339,19 @@
     // Exécuter immédiatement le verrouillage de sécurité
     verifierAcces();
 
-    // --- CONFIGURATION GÉOMÉTRIQUE DU QR CODE ET TEXTE ---
+    // --- CONFIGURATION GÉOMÉTRIQUE CENTRALISÉE ---
     const REGLAGES_IMAGE = {
-      tailleQR: 130,   // S'intègre sans déborder dans le carré
-      positionX: 326,  // Centrage latéral chirurgical du QR Code
-      positionY: 665,  // Alignement vertical du QR Code
+      tailleQR: 130,   
+      positionX: 326,  
+      positionY: 665,  
       
-      // Réglages typographiques pour le nom de l'invité
+      // Réglages typographiques pour le haut de la carte
       couleurTexte: "#41443c",
-      taillePolice: "15px",     // Ajuste en pixels pour remplir harmonieusement la forme
-      axeYTexteDepuisLeBas: 18  // Position ajustée pour une police de 15px
+      taillePolice: "4px",      // Augmente cette valeur (ex: "20px") si c'est trop petit
+      axeXCentre: 787 / 2,     // Centrage horizontal parfait (milieu de 787px)
+      axeYTop: 165,            // Distance de 165px depuis le haut
+      largeurMax: 450,         // Limite de coupure et retrait à 450px
+      hauteurLigne: 18         // Espace vertical si retour à la ligne
     };
     
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
@@ -386,8 +389,8 @@
       qr.clear();
       qr.makeCode(JSON.stringify(donnéesComplètes));
 
-      // Attente du rendu asynchrone de la police et du QR
-      document.fonts.load(`bold ${REGLAGES_IMAGE.taillePolice} 'Cinzel'`).then(() => {
+      // Synchronisation avec Google Fonts avant le dessin
+      document.fonts.load(`600 ${REGLAGES_IMAGE.taillePolice} 'Cinzel'`).then(() => {
         setTimeout(() => {
           const imgQR = qrcodeHiddenContainer.querySelector("img");
           if (imgQR && imgQR.src) {
@@ -414,11 +417,6 @@
       }
     });
     
-// ... (ici il y a le code pour QRCode et l'événement "btnGenerer") ...
-    
-    // ==========================================
-    // REMPLACE TOUTE CETTE FONCTION PAR CELLE-CI :
-    // ==========================================
     function dessinerInvitationComplete(qrCodeBase64, nomInvite) {
       const fondDesign = new Image();
       fondDesign.src = "design-invitation.png";
@@ -441,24 +439,18 @@
             REGLAGES_IMAGE.tailleQR
           );
           
-          // 2. Configuration du style du texte (Nom de l'invité)
-          ctx.fillStyle = "#41443c";
-          ctx.font = "600 4px 'Cinzel', serif"; // Écrit en 4px et police Cinzel
+          // 2. Configuration du style du texte
+          ctx.fillStyle = REGLAGES_IMAGE.couleurTexte;
+          ctx.font = `600 ${REGLAGES_IMAGE.taillePolice} 'Cinzel', serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "top";
 
-          const axeXCentre = 787 / 2; // Centré au milieu de la largeur de 787px
-          const axeYTop = 165;       // À 165px du haut vers le bas
-          const largeurMax = 450;    // Ne doit pas dépasser 450px
-          const hauteurLigne = 18;   // Espace entre deux lignes si le texte est coupé (Ajustable)
-
-          // 3. Fonction intelligente de retour à la ligne automatique et centrage
+          // 3. Fonction intelligente de gestion des retours à la ligne et centrage
           function dessinerTexteAjuste(contexte, texte, x, y, maxLargeur, hauteurLigne) {
             let mots = texte.split(' ');
             let ligne = '';
             let lignes = [];
 
-            // Découpage du texte en plusieurs lignes si nécessaire
             for (let n = 0; n < mots.length; n++) {
               let ligneTest = ligne + mots[n] + ' ';
               let metriques = contexte.measureText(ligneTest);
@@ -473,28 +465,25 @@
             }
             lignes.push(ligne);
 
-            // Dessin de chaque ligne centrée sur l'axe X
             for (let i = 0; i < lignes.length; i++) {
               contexte.fillText(lignes[i].trim(), x, y + (i * hauteurLigne));
             }
           }
 
-          // Exécution de l'écriture sur le canvas
-          dessinerTexteAjuste(ctx, nomInvite, axeXCentre, axeYTop, largeurMax, hauteurLigne);
+          // Exécution de l'écriture
+          dessinerTexteAjuste(
+            ctx, 
+            nomInvite, 
+            REGLAGES_IMAGE.axeXCentre, 
+            REGLAGES_IMAGE.axeYTop, 
+            REGLAGES_IMAGE.largeurMax, 
+            REGLAGES_IMAGE.hauteurLigne
+          );
 
           document.getElementById("qr-wrapper").style.display = "flex";
         };
       };
 
-      fondDesign.onerror = function() {
-        alert("Erreur : Le fichier 'design-invitation.png' est introuvable.");
-        document.getElementById("btnGenerer").disabled = false;
-        document.getElementById("btnGenerer").style.opacity = "1";
-      };
-    }
-    // ==========================================
-
-    // ... (en dessous se trouvent les fonctions window.telechargerInvitation et window.creerSuivant) ...
       fondDesign.onerror = function() {
         alert("Erreur : Le fichier 'design-invitation.png' est introuvable.");
         document.getElementById("btnGenerer").disabled = false;
