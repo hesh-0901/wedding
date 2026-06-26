@@ -251,38 +251,28 @@
           <label>Numéro de table</label>
           <input type="number" id="numTable" placeholder="Ex: 3">
         </div>
-        <button class="btn-submit" id="btnGenerer">Enregistrer & Créer le QR Code</button>
+        <button class="btn-submit" id="btnGenerer">Enregistrer & Télécharger l'Invitation</button>
       </form>
 
       <div id="qrcode-hidden"></div>
 
-      <div id="qr-wrapper" class="qr-result-container">
-        <label style="font-size: 0.85rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px;">Aperçu de l'invitation officielle</label>
-        
-        <div class="preview-canvas-wrapper">
-          <canvas id="invitationCanvas"></canvas>
-        </div>
-        
-        <div class="actions-wrapper">
-          <button class="btn-action-premium btn-download-style" onclick="telechargerInvitation()">
-            <svg class="icon-svg-action" viewBox="0 0 24 24">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
-            </svg>
-            Télécharger l'Invitation
-          </button>
+      <div style="display: none;">
+        <canvas id="invitationCanvas"></canvas>
+      </div>
 
-          <button class="btn-action-premium btn-next-style" onclick="creerSuivant()">
-            Créer le suivant
-            <svg class="icon-svg-action" viewBox="0 0 24 24">
-              <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-          </button>
-        </div>
+      <div id="next-wrapper" style="display: none; margin-top: 25px; text-align: center;">
+        <button class="btn-submit" style="background: var(--dark); color: white;" onclick="creerSuivant()">
+          Préparer l'invité suivant
+          <svg style="width:16px; height:16px; fill:none; stroke:white; stroke-width:2; margin-left:8px; vertical-align:middle;" viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
       </div>
 
     </div>
   </div>
-    <script type="module">
+
+  <script type="module">
     import { db, doc, setDoc, getDoc } from "./firebase-config.js";
 
     // --- VERIFICATION SECURISEE DU MOT DE PASSE FIRESTORE ---
@@ -351,10 +341,10 @@
       // Réglages typographiques pour le haut de la carte
       couleurTexte: "#41443c",
       taillePolice: "20px",      
-      axeXCentre: 787 / 2,     // Centrage horizontal parfait (milieu de 787px)
-      axeYTop: 165,            // Distance de 165px depuis le haut
-      largeurMax: 450,         // Limite de coupure et retrait à 450px
-      hauteurLigne: 26         // Augmenté à 26 pour accueillir confortablement le 20px Bold
+      axeXCentre: 787 / 2,     
+      axeYTop: 165,            
+      largeurMax: 450,         
+      hauteurLigne: 26         
     };
     
     let qrcodeHiddenContainer = document.getElementById("qrcode-hidden");
@@ -389,23 +379,27 @@
         tNum: numTable
       };
 
+      // Désactiver le bouton immédiatement pendant le traitement
+      const btnGenerer = document.getElementById("btnGenerer");
+      btnGenerer.disabled = true;
+      btnGenerer.style.opacity = "0.5";
+
       qr.clear();
       qr.makeCode(JSON.stringify(donnéesComplètes));
 
-      // Synchronisation avec Google Fonts avant le dessin
+      // Synchronisation avec Google Fonts avant le dessin et téléchargement automatique
       document.fonts.load(`bold ${REGLAGES_IMAGE.taillePolice} 'Cinzel'`).then(() => {
         setTimeout(() => {
           const imgQR = qrcodeHiddenContainer.querySelector("img");
           if (imgQR && imgQR.src) {
-            dessinerInvitationComplete(imgQR.src, nom);
+            dessinerEtTelechargerAutomatique(imgQR.src, nom);
           } else {
             alert("Erreur lors de la préparation géométrique du QR code.");
+            btnGenerer.disabled = false;
+            btnGenerer.style.opacity = "1";
           }
         }, 250);
       });
-
-      document.getElementById("btnGenerer").disabled = true;
-      document.getElementById("btnGenerer").style.opacity = "0.5";
 
       try {
         await setDoc(doc(db, "invites", inviteId), {
@@ -420,7 +414,7 @@
       }
     });
     
-    function dessinerInvitationComplete(qrCodeBase64, nomInvite) {
+    function dessinerEtTelechargerAutomatique(qrCodeBase64, nomInvite) {
       const fondDesign = new Image();
       fondDesign.src = "design-invitation.png";
 
@@ -429,7 +423,6 @@
         canvas.height = fondDesign.height;
         ctx.drawImage(fondDesign, 0, 0);
 
-        // 1. Dessin du QR Code
         const imageQR = new Image();
         imageQR.src = qrCodeBase64;
 
@@ -442,13 +435,11 @@
             REGLAGES_IMAGE.tailleQR
           );
           
-          // 2. Configuration du style du texte (Passage en bold)
           ctx.fillStyle = REGLAGES_IMAGE.couleurTexte;
           ctx.font = `bold ${REGLAGES_IMAGE.taillePolice} 'Cinzel', serif`;
           ctx.textAlign = "center";
           ctx.textBaseline = "top";
 
-          // 3. Fonction intelligente de gestion des retours à la ligne et centrage
           function dessinerTexteAjuste(contexte, texte, x, y, maxLargeur, hauteurLigne) {
             let mots = texte.split(' ');
             let ligne = '';
@@ -473,7 +464,6 @@
             }
           }
 
-          // Exécution de l'écriture (Forçage des majuscules avec .toUpperCase())
           dessinerTexteAjuste(
             ctx, 
             nomInvite.toUpperCase(), 
@@ -483,44 +473,49 @@
             REGLAGES_IMAGE.hauteurLigne
           );
 
-          document.getElementById("qr-wrapper").style.display = "flex";
+          // --- DÉCLENCHEMENT IMMÉDIAT DU TÉLÉCHARGEMENT ---
+          const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
+          const imageFinaleUrl = canvas.toDataURL("image/png", 1.0);
+          
+          const lien = document.createElement("a");
+          lien.href = imageFinaleUrl;
+          lien.download = nomFichier;
+          document.body.appendChild(lien);
+          lien.click();
+          document.body.removeChild(lien);
+
+          // Affiche le bouton d'enchaînement
+          document.getElementById("next-wrapper").style.display = "block";
         };
       };
 
       fondDesign.onerror = function() {
         alert("Erreur : Le fichier 'design-invitation.png' est introuvable.");
-        document.getElementById("btnGenerer").disabled = false;
-        document.getElementById("btnGenerer").style.opacity = "1";
+        const btnGenerer = document.getElementById("btnGenerer");
+        btnGenerer.disabled = false;
+        btnGenerer.style.opacity = "1";
       };
     }
 
-    window.telechargerInvitation = function() {
-      const nomInvite = document.getElementById("nom").value.trim() || "invite";
-      const nomFichier = "Invitation_" + nomInvite.replace(/[^a-zA-Z0-9]/g, "_") + ".png";
-      
-      const imageFinaleUrl = canvas.toDataURL("image/png", 1.0);
-      
-      const lien = document.createElement("a");
-      lien.href = imageFinaleUrl;
-      lien.download = nomFichier;
-      document.body.appendChild(lien);
-      lien.click();
-      document.body.removeChild(lien);
-    }
-
     window.creerSuivant = function() {
-      document.getElementById("formInvite").reset();
-      document.getElementById("qr-wrapper").style.display = "none";
+      // On vide uniquement le champ nom
+      document.getElementById("nom").value = "";
+      
+      // Nettoyage des résidus du QR code précédent
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       qr.clear();
 
+      // Réactivation du bouton principal et masquage du bouton suivant
       const btnGenerer = document.getElementById("btnGenerer");
       btnGenerer.disabled = false;
       btnGenerer.style.opacity = "1";
+      document.getElementById("next-wrapper").style.display = "none";
 
+      // Redonne instantanément le focus au champ nom
       document.getElementById("nom").focus();
     }
-      // --- ENREGISTREMENT DE LA PWA (SERVICE WORKER) ---
+
+    // --- ENREGISTREMENT DE LA PWA (SERVICE WORKER) ---
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js")
@@ -530,5 +525,5 @@
     }
   </script>
   
- </body>
+</body>
 </html>
