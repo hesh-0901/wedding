@@ -308,6 +308,14 @@
 
     // Premier démarrage au chargement de la page
     initialiserScanner();
+    // --- ENREGISTREMENT DE LA PWA (SERVICE WORKER) ---
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js")
+          .then((reg) => console.log("PWA Service Worker enregistré avec succès !", reg.scope))
+          .catch((err) => console.error("Échec de l'enregistrement du Service Worker :", err));
+      });
+    }
   </script>
 </body>
 </html>
