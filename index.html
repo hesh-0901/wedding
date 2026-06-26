@@ -41,7 +41,7 @@
     .icon-bootstrap { width: 24px; height: 24px; fill: none; stroke: var(--dark); stroke-width: 1.5; flex-shrink: 0; transition: stroke 0.3s; }
     .btn-large:hover .icon-bootstrap { stroke: var(--gold); }
 
-    /* Forcé en flex pour l'aperçu immédiat avant l'ajout des icônes PNG */
+    /* Rendu initial visible pour éviter les sauts d'interface sur Android */
     .btn-install-pwa {
       display: flex;
       border: 1px dashed var(--gold);
@@ -74,7 +74,7 @@
         </svg>
         <div class="btn-large-text">
           <span class="btn-large-title" style="color: var(--dark);">Télécharger l'Application</span>
-          <span class="btn-large-subtitle">Installer sur cet appareil pour un accès direct</span>
+          <span class="btn-large-subtitle" id="pwaSubtitle">Installer sur cet appareil pour un accès direct</span>
         </div>
       </button>
       
@@ -118,50 +118,65 @@
   </div>
 
   <script>
-    // 1. Enregistrement classique du Service Worker PWA
+    // 1. Enregistrement optimisé du Service Worker avec mise à jour forcée
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js")
-          .then((reg) => console.log("PWA Active :", reg.scope))
+          .then((reg) => {
+            console.log("PWA Active :", reg.scope);
+            // Force la mise à jour du manifest s'il y a des changements d'icônes récents
+            reg.update();
+          })
           .catch((err) => console.error("Erreur PWA :", err));
       });
     }
 
-    // 2. Logique d'interception du bouton d'installation
+    // 2. Gestion intelligente et multi-compatible de l'installation
     let differePrompt;
     const btnInstall = document.getElementById("pwaInstallBtn");
+    const pwaSubtitle = document.getElementById("pwaSubtitle");
 
-    // Masque immédiatement le bouton si l'application s'exécute déjà en mode autonome autonome (PWA déjà lancée)
-    if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
-      btnInstall.style.display = "none";
-    }
+    // Masquage immédiat si l'application est lancée depuis l'icône du téléphone (Standalone)
+    const verificationModeAutonome = () => {
+      if (window.matchMedia('(display-mode: standalone)').matches || navigator.standalone) {
+        btnInstall.style.display = "none";
+        return true;
+      }
+      return false;
+    };
+    
+    verificationModeAutonome();
 
+    // Capture de l'événement natif d'installation (Chrome, Edge, Samsung Internet)
     window.addEventListener("beforeinstallprompt", (e) => {
       e.preventDefault();
       differePrompt = e;
-      // S'assure de l'afficher si le navigateur valide l'installation
       btnInstall.style.display = "flex";
+      pwaSubtitle.innerText = "Installer sur cet appareil pour un accès direct";
     });
 
     btnInstall.addEventListener("click", async () => {
-      // Si le prompt natif n'est pas encore prêt (absence d'images), on met un message d'attente amical
-      if (!differePrompt) {
-        alert("Préparation de l'application... L'installation sera entièrement disponible dès que les fichiers d'icônes 'icon-192.png' et 'icon-512.png' seront ajoutés à la racine de votre projet.");
-        return;
+      if (verificationModeAutonome()) return;
+
+      // Si le prompt natif est prêt, on l'exécute
+      if (differePrompt) {
+        differePrompt.prompt();
+        const { outcome } = await differePrompt.userChoice;
+        console.log(`Choix utilisateur : ${outcome}`);
+        differePrompt = null;
+        if (outcome === 'accepted') btnInstall.style.display = "none";
+      } 
+      // FALLBACK ANDROID (Si les icônes chargent mal ou si la version Android restreint le prompt automatique)
+      else {
+        alert("Installation manuelle : Cliquez sur les 3 petits points en haut à droite de votre navigateur (Menu), puis sélectionnez 'Ajouter à l'écran d'accueil' ou 'Installer l'application'.");
       }
-      
-      differePrompt.prompt();
-      const { outcome } = await differePrompt.userChoice;
-      console.log(`Choix d'installation : ${outcome}`);
-      
-      differePrompt = null;
-      btnInstall.style.display = "none";
     });
 
+    // Événement déclenché dès que l'installation réussit
     window.addEventListener("appinstalled", () => {
       btnInstall.style.display = "none";
       differePrompt = null;
-      alert("Application installée avec succès ! Retrouvez-la sur votre écran d'accueil ou votre bureau.");
+      alert("Félicitations ! L'application est maintenant installée sur votre appareil.");
     });
   </script>
 
